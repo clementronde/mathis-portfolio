@@ -30,23 +30,32 @@ const RESIZE_HANDLES = [
   { dir: 'sw', style: { bottom: 0, left: 0, width: 10, height: 10, cursor: 'nesw-resize' } },
 ] as const;
 
+function centeredPos(w: number, h: number) {
+  if (typeof window === 'undefined') return { x: 80, y: 60 };
+  return {
+    x: Math.max(0, Math.round((window.innerWidth - w) / 2)),
+    y: Math.max(28, Math.round((window.innerHeight - h) / 2)),
+  };
+}
+
 export function Window({
   id,
   title,
   icon,
   children,
-  defaultPosition = { x: 80, y: 60 },
+  defaultPosition,
   defaultSize = { width: 760, height: 520 },
   className = '',
 }: WindowProps) {
   const { closeWindow, focusWindow, activeWindow } = useWindowStore();
   const isActive = activeWindow === id;
 
-  const x = useMotionValue(defaultPosition.x);
-  const y = useMotionValue(defaultPosition.y);
+  const initPos = defaultPosition ?? centeredPos(defaultSize.width, defaultSize.height);
+  const x = useMotionValue(initPos.x);
+  const y = useMotionValue(initPos.y);
   const [size, setSize] = useState(defaultSize);
   const [isMaximized, setIsMaximized] = useState(false);
-  const savedPos = useRef(defaultPosition);
+  const savedPos = useRef(initPos);
   const savedSize = useRef(defaultSize);
   const controls = useAnimationControls();
 

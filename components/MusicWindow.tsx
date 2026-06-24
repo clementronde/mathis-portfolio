@@ -35,39 +35,39 @@ export function MusicWindow() {
       id="music"
       title="Musique"
       icon={<AppIcon id="music" size={16} />}
-      defaultPosition={{ x: 320, y: 80 }}
+      
       defaultSize={{ width: 580, height: 480 }}
     >
-      <div className="flex h-full text-white" style={{ background: 'rgba(18,10,10,0.98)' }}>
+      <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
         {/* Left — now playing */}
         <div
           className="w-52 shrink-0 flex flex-col items-center justify-center p-6 gap-4"
-          style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ borderRight: '1px solid rgba(0,0,0,0.1)', background: '#f9f9f9' }}
         >
           {/* Album art */}
           <div
-            className="w-36 h-36 rounded-2xl shadow-2xl"
+            className="w-36 h-36 rounded-2xl shadow-lg"
             style={{
               background: current.color,
-              backgroundImage: `linear-gradient(135deg, ${current.color}, #0a0a0a)`,
-              boxShadow: `0 16px 48px ${current.color}80`,
+              backgroundImage: `linear-gradient(135deg, ${current.color}, #333)`,
+              boxShadow: `0 12px 32px rgba(0,0,0,0.18)`,
             }}
           />
 
           <div className="text-center">
-            <p className="text-[14px] font-semibold text-white leading-tight">{current.title}</p>
-            <p className="text-[12px] text-white/50 mt-1">{current.artist}</p>
+            <p className="text-[14px] font-semibold leading-tight" style={{ color: '#1d1d1f' }}>{current.title}</p>
+            <p className="text-[12px] mt-1" style={{ color: 'rgba(0,0,0,0.45)' }}>{current.artist}</p>
           </div>
 
           {/* Progress bar */}
           <div className="w-full space-y-1">
-            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.1)' }}>
               <div
-                className="h-full bg-white/60 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
+                className="h-full rounded-full transition-all"
+                style={{ width: `${progress}%`, background: '#FC3C44' }}
               />
             </div>
-            <div className="flex justify-between text-[10px] text-white/30">
+            <div className="flex justify-between text-[10px]" style={{ color: 'rgba(0,0,0,0.35)' }}>
               <span>1:{String(Math.floor(progress * 0.6)).padStart(2, '0')}</span>
               <span>{current.duration}</span>
             </div>
@@ -75,27 +75,28 @@ export function MusicWindow() {
 
           {/* Controls */}
           <div className="flex items-center gap-4">
-            <button onClick={prev} aria-label="Précédent" className="text-white/50 hover:text-white transition-colors">
+            <button onClick={prev} aria-label="Précédent" className="transition-colors" style={{ color: 'rgba(0,0,0,0.45)' }}>
               <SkipBack size={18} />
             </button>
             <button
               onClick={() => setPlaying((p) => !p)}
               aria-label={playing ? 'Pause' : 'Lecture'}
-              className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black hover:scale-105 transition-transform"
+              className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+              style={{ background: '#FC3C44', color: '#fff' }}
             >
-              {playing ? <Pause size={16} fill="black" /> : <Play size={16} fill="black" className="ml-0.5" />}
+              {playing ? <Pause size={16} fill="white" /> : <Play size={16} fill="white" className="ml-0.5" />}
             </button>
-            <button onClick={next} aria-label="Suivant" className="text-white/50 hover:text-white transition-colors">
+            <button onClick={next} aria-label="Suivant" className="transition-colors" style={{ color: 'rgba(0,0,0,0.45)' }}>
               <SkipForward size={18} />
             </button>
           </div>
 
-          <div className="flex items-center gap-3 text-white/30">
+          <div className="flex items-center gap-3" style={{ color: 'rgba(0,0,0,0.3)' }}>
             <Shuffle size={13} />
             <div className="flex items-center gap-1">
               <Volume2 size={13} />
-              <div className="w-16 h-0.5 bg-white/20 rounded-full">
-                <div className="w-3/4 h-full bg-white/50 rounded-full" />
+              <div className="w-16 h-0.5 rounded-full" style={{ background: 'rgba(0,0,0,0.15)' }}>
+                <div className="w-3/4 h-full rounded-full" style={{ background: 'rgba(0,0,0,0.4)' }} />
               </div>
             </div>
             <Repeat size={13} />
@@ -104,8 +105,8 @@ export function MusicWindow() {
 
         {/* Right — playlist */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-4 py-3 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-            <p className="text-[11px] text-white/40 uppercase tracking-wider">Ma playlist</p>
+          <div className="px-4 py-3 shrink-0" style={{ borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+            <p className="text-[11px] uppercase tracking-wider" style={{ color: 'rgba(0,0,0,0.35)' }}>Ma playlist</p>
           </div>
           <div className="flex-1 overflow-y-auto py-1">
             {PLAYLIST.map((track, idx) => (
@@ -113,21 +114,22 @@ export function MusicWindow() {
                 key={track.id}
                 onClick={() => { setCurrentIndex(idx); setProgress(0); setPlaying(true); }}
                 aria-label={`Jouer ${track.title}`}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors ${
-                  idx === currentIndex ? 'bg-white/10' : 'hover:bg-white/5'
-                }`}
+                className="w-full flex items-center gap-3 px-4 py-2.5 transition-colors"
+                style={{ background: idx === currentIndex ? 'rgba(252,60,68,0.08)' : 'transparent' }}
+                onMouseEnter={(e) => { if (idx !== currentIndex) e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = idx === currentIndex ? 'rgba(252,60,68,0.08)' : 'transparent'; }}
               >
                 <div
                   className="w-9 h-9 rounded-lg shrink-0"
-                  style={{ background: `linear-gradient(135deg, ${track.color}, #0a0a0a)` }}
+                  style={{ background: `linear-gradient(135deg, ${track.color}, #555)` }}
                 />
                 <div className="flex-1 text-left">
-                  <p className={`text-[13px] font-medium leading-tight ${idx === currentIndex ? 'text-white' : 'text-white/70'}`}>
+                  <p className="text-[13px] font-medium leading-tight" style={{ color: idx === currentIndex ? '#FC3C44' : '#1d1d1f' }}>
                     {track.title}
                   </p>
-                  <p className="text-[11px] text-white/35 mt-0.5">{track.artist}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'rgba(0,0,0,0.4)' }}>{track.artist}</p>
                 </div>
-                <span className="text-[11px] text-white/30">{track.duration}</span>
+                <span className="text-[11px]" style={{ color: 'rgba(0,0,0,0.3)' }}>{track.duration}</span>
               </button>
             ))}
           </div>

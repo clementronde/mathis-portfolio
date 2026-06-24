@@ -16,27 +16,29 @@ export function NotesWindow() {
       id="notes"
       title="Notes"
       icon={<AppIcon id="notes" size={16} />}
-      defaultPosition={{ x: 200, y: 60 }}
+      
       defaultSize={{ width: 700, height: 520 }}
     >
-      <div className="flex h-full text-white">
+      <div className="flex h-full" style={{ background: '#ffffff' }}>
         {/* Sidebar */}
         <div
           className="w-52 shrink-0 flex flex-col overflow-hidden"
           style={{
-            background: 'rgba(35,30,20,0.95)',
-            borderRight: '1px solid rgba(255,255,255,0.06)',
+            background: '#f2f2f7',
+            borderRight: '1px solid rgba(0,0,0,0.1)',
           }}
         >
           {/* Filter tabs */}
-          <div className="flex gap-0 p-2 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex gap-0 p-2 shrink-0" style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
             {(['all', 'pro', 'perso'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`flex-1 py-1 text-[11px] rounded-md transition-colors ${
-                  filter === f ? 'bg-yellow-400/20 text-yellow-300' : 'text-white/40 hover:text-white/70'
-                }`}
+                className="flex-1 py-1 text-[11px] rounded-md transition-colors"
+                style={{
+                  background: filter === f ? 'rgba(255,204,0,0.25)' : 'transparent',
+                  color: filter === f ? '#b8860b' : 'rgba(60,60,67,0.55)',
+                }}
               >
                 {f === 'all' ? 'Toutes' : f === 'pro' ? 'Pro' : 'Perso'}
               </button>
@@ -50,21 +52,21 @@ export function NotesWindow() {
                 key={note.id}
                 onClick={() => setSelected(note)}
                 aria-label={`Ouvrir la note ${note.title}`}
-                className={`w-full text-left px-3 py-2.5 transition-colors ${
-                  selected.id === note.id
-                    ? 'bg-yellow-400/15 border-l-2 border-yellow-400'
-                    : 'hover:bg-white/5 border-l-2 border-transparent'
-                }`}
+                className="w-full text-left px-3 py-2.5 transition-colors border-l-2"
+                style={{
+                  background: selected.id === note.id ? 'rgba(255,204,0,0.15)' : 'transparent',
+                  borderLeftColor: selected.id === note.id ? '#FFCC00' : 'transparent',
+                }}
               >
-                <p className="text-[13px] font-medium text-white/85 truncate">{note.title}</p>
-                <p className="text-[11px] text-white/35 mt-0.5 truncate">{note.date}</p>
+                <p className="text-[13px] font-medium truncate" style={{ color: 'rgba(0,0,0,0.8)' }}>{note.title}</p>
+                <p className="text-[11px] mt-0.5 truncate" style={{ color: 'rgba(0,0,0,0.4)' }}>{note.date}</p>
               </button>
             ))}
           </div>
         </div>
 
         {/* Note content */}
-        <div className="flex-1 overflow-hidden flex flex-col" style={{ background: 'rgba(42,36,22,0.97)' }}>
+        <div className="flex-1 overflow-hidden flex flex-col" style={{ background: '#fffef5' }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={selected.id}
@@ -76,13 +78,14 @@ export function NotesWindow() {
             >
               {/* Header */}
               <div className="mb-5">
-                <h2 className="text-[20px] font-semibold text-white leading-tight">{selected.title}</h2>
+                <h2 className="text-[20px] font-semibold leading-tight" style={{ color: '#1d1d1f' }}>{selected.title}</h2>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[11px] text-white/40">{selected.date}</span>
+                  <span className="text-[11px]" style={{ color: 'rgba(0,0,0,0.4)' }}>{selected.date}</span>
                   {selected.tags?.map((tag) => (
                     <span
                       key={tag}
-                      className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-400/15 text-yellow-300/80"
+                      className="text-[10px] px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(255,204,0,0.2)', color: '#8a6d00' }}
                     >
                       {tag}
                     </span>
@@ -91,7 +94,7 @@ export function NotesWindow() {
               </div>
 
               {/* Body */}
-              <div className="text-[13.5px] text-white/70 leading-7 whitespace-pre-line">
+              <div className="text-[13.5px] leading-7 whitespace-pre-line" style={{ color: 'rgba(0,0,0,0.65)' }}>
                 {selected.content}
               </div>
             </motion.div>

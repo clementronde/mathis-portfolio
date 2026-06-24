@@ -37,7 +37,7 @@ function IconWithFallback({
       width={size}
       height={size}
       onError={() => setFailed(true)}
-      style={{ width: size, height: size, borderRadius: size * 0.22, objectFit: 'cover', display: 'block' }}
+      style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
       draggable={false}
     />
   );

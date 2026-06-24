@@ -81,7 +81,7 @@ export function FinderWindow() {
       id="finder"
       title={title}
       icon={<AppIcon id="finder" size={16} />}
-      defaultPosition={{ x: 60, y: 40 }}
+      
       defaultSize={{ width: 860, height: 580 }}
     >
       <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>

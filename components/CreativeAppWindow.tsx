@@ -69,38 +69,36 @@ export function CreativeAppWindow({ id }: Props) {
       id={id as AppId}
       title={data.title}
       icon={<AppIcon id={id as AppId} size={16} />}
-      defaultPosition={POSITIONS[id]}
       defaultSize={{ width: 500, height: 420 }}
     >
       <div
-        className="flex flex-col h-full p-6 text-white overflow-y-auto"
-        style={{ background: data.color }}
+        className="flex flex-col h-full p-6 overflow-y-auto"
+        style={{ background: '#ffffff', color: '#1d1d1f' }}
       >
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <AppIcon id={id as AppId} size={52} />
           <div>
-            <h2 className="text-[18px] font-semibold">{data.title}</h2>
-            <p className="text-[13px] opacity-60 mt-1 leading-relaxed max-w-xs">{data.description}</p>
+            <h2 className="text-[18px] font-semibold" style={{ color: '#1d1d1f' }}>{data.title}</h2>
+            <p className="text-[13px] mt-1 leading-relaxed max-w-xs" style={{ color: 'rgba(0,0,0,0.5)' }}>{data.description}</p>
           </div>
         </div>
 
         {/* Skills */}
         <div className="space-y-4">
-          <p className="text-[11px] uppercase tracking-wider opacity-40">Compétences</p>
+          <p className="text-[11px] uppercase tracking-wider" style={{ color: 'rgba(0,0,0,0.35)' }}>Compétences</p>
           {data.skills.map((skill) => (
             <div key={skill.label}>
               <div className="flex justify-between mb-1">
-                <span className="text-[13px] opacity-80">{skill.label}</span>
-                <span className="text-[12px] opacity-40">{skill.level}%</span>
+                <span className="text-[13px]" style={{ color: 'rgba(0,0,0,0.75)' }}>{skill.label}</span>
+                <span className="text-[12px]" style={{ color: 'rgba(0,0,0,0.4)' }}>{skill.level}%</span>
               </div>
-              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.08)' }}>
                 <div
                   className="h-full rounded-full transition-all duration-700"
                   style={{
                     width: `${skill.level}%`,
                     background: data.accentColor,
-                    boxShadow: `0 0 8px ${data.accentColor}60`,
                   }}
                 />
               </div>

@@ -11,7 +11,7 @@ import { ImageIcon } from 'lucide-react';
 // Flatten all project images into a single list, tagged by project id
 const ALL_PHOTOS = PROJECTS.flatMap((proj) =>
   proj.images
-    .filter((img) => img.endsWith('.jpg') || img.endsWith('.JPG') || img.endsWith('.gif'))
+    .filter((img) => /\.(avif|jpg|jpeg|JPG|webp|png)$/i.test(img))
     .map((img, i) => ({ src: img, color: proj.color, projectId: proj.id, key: `${proj.id}-${i}` }))
 );
 
@@ -30,54 +30,54 @@ export function PhotosWindow() {
       id="photos"
       title="Photos"
       icon={<AppIcon id="photos" size={16} />}
-      defaultPosition={{ x: 100, y: 44 }}
+      
       defaultSize={{ width: 860, height: 580 }}
     >
-      <div className="flex h-full text-white" style={{ background: '#1c1c1c' }}>
+      <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
         {/* Sidebar */}
         <div
           className="w-48 shrink-0 flex flex-col overflow-y-auto py-3"
-          style={{ borderRight: '1px solid rgba(255,255,255,0.07)', background: '#1a1a1a' }}
+          style={{ borderRight: '1px solid rgba(0,0,0,0.1)', background: '#f2f2f7' }}
         >
           {/* Library */}
           <button
             onClick={() => setSelectedProject(null)}
-            className={`flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] transition-colors ${
-              !selectedProject ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/8 hover:text-white/90'
-            }`}
+            className="flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] transition-colors"
+            style={{
+              background: !selectedProject ? 'rgba(0,122,255,0.15)' : 'transparent',
+              color: !selectedProject ? '#007AFF' : 'rgba(60,60,67,0.7)',
+            }}
           >
-            <ImageIcon size={14} className="shrink-0 opacity-70" />
+            <ImageIcon size={14} className="shrink-0" />
             <span className="font-medium">Bibliothèque</span>
           </button>
-          <div className="mx-3 mt-1 mb-1 text-[10px] text-white/25">{ALL_PHOTOS.length} photos</div>
+          <div className="mx-3 mt-1 mb-1 text-[10px]" style={{ color: 'rgba(60,60,67,0.4)' }}>{ALL_PHOTOS.length} photos</div>
 
           {/* Albums */}
-          <div className="mt-3 mb-1 px-3 text-[10px] font-semibold text-white/30 uppercase tracking-wider">
+          <div className="mt-3 mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(60,60,67,0.4)' }}>
             Albums
           </div>
           {PROJECTS.map((proj) => (
             <button
               key={proj.id}
               onClick={() => setSelectedProject(proj.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] transition-colors text-left ${
-                selectedProject === proj.id
-                  ? 'bg-white/15 text-white'
-                  : 'text-white/55 hover:bg-white/8 hover:text-white/85'
-              }`}
+              className="flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] transition-colors text-left"
+              style={{
+                background: selectedProject === proj.id ? 'rgba(0,122,255,0.15)' : 'transparent',
+                color: selectedProject === proj.id ? '#007AFF' : 'rgba(60,60,67,0.7)',
+              }}
             >
-              {/* Mini folder icon with color */}
               <div
                 className="w-4 h-4 rounded-sm shrink-0"
                 style={{
-                  background: proj.color,
                   backgroundImage: `url("${encodeSrc(proj.coverImage)}")`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  opacity: 0.9,
+                  background: proj.color,
                 }}
               />
               <span className="truncate">{proj.title}</span>
-              <span className="ml-auto text-[10px] text-white/20 shrink-0">{proj.images.length}</span>
+              <span className="ml-auto text-[10px] shrink-0" style={{ color: 'rgba(60,60,67,0.35)' }}>{proj.images.length}</span>
             </button>
           ))}
         </div>
@@ -87,16 +87,16 @@ export function PhotosWindow() {
           {/* Header */}
           <div
             className="px-4 py-2.5 shrink-0 flex items-center gap-2"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+            style={{ borderBottom: '1px solid rgba(0,0,0,0.1)', background: '#f9f9f9' }}
           >
-            <span className="text-[15px] font-semibold text-white">
+            <span className="text-[15px] font-semibold" style={{ color: '#1d1d1f' }}>
               {currentProject ? currentProject.title : 'Bibliothèque'}
             </span>
-            <span className="text-[12px] text-white/35 ml-1">
+            <span className="text-[12px] ml-1" style={{ color: 'rgba(0,0,0,0.35)' }}>
               · {filtered.length} photo{filtered.length > 1 ? 's' : ''}
             </span>
             {currentProject && (
-              <span className="text-[11px] text-white/25 ml-auto">
+              <span className="text-[11px] ml-auto" style={{ color: 'rgba(0,0,0,0.3)' }}>
                 {currentProject.location} · {currentProject.year}
               </span>
             )}
@@ -118,7 +118,7 @@ export function PhotosWindow() {
                     key={photo.key}
                     onClick={() => setLightboxIndex(idx)}
                     aria-label={`Photo ${idx + 1}`}
-                    className="block w-full mb-2 rounded-md overflow-hidden outline-none group"
+                    className="block w-full mb-2 rounded-md overflow-hidden outline-none"
                     whileHover={{ opacity: 0.88 }}
                     transition={{ duration: 0.1 }}
                   >
