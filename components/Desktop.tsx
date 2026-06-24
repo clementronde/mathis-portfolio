@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useWindowStore } from '@/store/useWindowStore';
 import { TopBar } from './TopBar';
@@ -125,8 +126,34 @@ const WINDOWS: { id: AppId; element: React.ReactNode }[] = [
   { id: 'premiere',  element: <CreativeAppWindow key="premiere" id="premiere" /> },
 ];
 
+const DESKTOP_ITEM_POSITIONS_KEY = 'portfolio-desktop-item-positions';
+
+function getDefaultItemPositions() {
+  return DESKTOP_ITEMS.reduce<Record<string, React.CSSProperties>>((positions, item) => {
+    positions[item.id] = item.style;
+    return positions;
+  }, {});
+}
+
 export function Desktop() {
   const { openWindows, openWindow } = useWindowStore();
+  const desktopItemsRef = useRef<HTMLDivElement>(null);
+  const [itemPositions, setItemPositions] = useState<Record<string, React.CSSProperties>>(getDefaultItemPositions);
+
+  useEffect(() => {
+    const savedPositions = window.localStorage.getItem(DESKTOP_ITEM_POSITIONS_KEY);
+    if (!savedPositions) return;
+
+    try {
+      const parsedPositions = JSON.parse(savedPositions) as Record<string, React.CSSProperties>;
+      setItemPositions({
+        ...getDefaultItemPositions(),
+        ...parsedPositions,
+      });
+    } catch {
+      window.localStorage.removeItem(DESKTOP_ITEM_POSITIONS_KEY);
+    }
+  }, []);
 
   return (
     <div
@@ -142,7 +169,7 @@ export function Desktop() {
       <TopBar />
 
       {/* Desktop collage — desktop only */}
-      <div className="absolute inset-0 z-[10] hidden md:block">
+      <div ref={desktopItemsRef} className="absolute inset-0 z-[10] hidden md:block">
         {DESKTOP_ITEMS.map((item) => (
           <DesktopItem
             key={item.id}
@@ -150,10 +177,21 @@ export function Desktop() {
             imageSrc={item.imageSrc}
             imageColor={item.imageColor}
             rotate={item.rotate}
-            style={item.style as React.CSSProperties}
+            style={itemPositions[item.id]}
             width={item.width}
             aspectRatio={item.aspectRatio}
             type={item.type}
+            dragConstraints={desktopItemsRef}
+            onMove={(position) => {
+              setItemPositions((positions) => {
+                const nextPositions = {
+                  ...positions,
+                  [item.id]: position,
+                };
+                window.localStorage.setItem(DESKTOP_ITEM_POSITIONS_KEY, JSON.stringify(nextPositions));
+                return nextPositions;
+              });
+            }}
             onClick={() => {
               const folder = (item.action as { type: string; folder?: string }).folder;
               openWindow('finder', folder);

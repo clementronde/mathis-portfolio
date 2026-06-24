@@ -10,10 +10,13 @@ const ICON_FILES: Partial<Record<AppId, string>> = {
   photos:    '/images/icons/Photosicon.png',
   music:     '/images/icons/musiqueIcon.png',
   maps:      '/images/icons/localistionicon.png',
-  lightroom: '/images/icons/lightroom.webp',
-  photoshop: '/images/icons/photoshopicon.webp',
+  lightroom: '/images/icons/lightroomicon.png',
+  photoshop: '/images/icons/photoshopicon.png',
   premiere:  '/images/icons/premiereproicon.png',
 };
+
+// Adobe icons are full-bleed; add padding to match Apple icons (~12% visual margin)
+const FULL_BLEED_ICONS: Set<AppId> = new Set(['lightroom', 'photoshop', 'premiere']);
 
 function IconWithFallback({
   id,
@@ -29,6 +32,8 @@ function IconWithFallback({
 
   if (failed || !src) return <>{fallback}</>;
 
+  const pad = FULL_BLEED_ICONS.has(id) ? Math.round(size * 0.12) : 0;
+
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -37,7 +42,13 @@ function IconWithFallback({
       width={size}
       height={size}
       onError={() => setFailed(true)}
-      style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
+      style={{
+        width: size - pad * 2,
+        height: size - pad * 2,
+        margin: pad,
+        objectFit: 'contain',
+        display: 'block',
+      }}
       draggable={false}
     />
   );

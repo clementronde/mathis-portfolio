@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import {
   motion,
   useMotionValue,
@@ -59,12 +59,22 @@ export function Window({
   const savedSize = useRef(defaultSize);
   const controls = useAnimationControls();
 
+  // Centre la fenêtre après montage (window.innerHeight n'existe pas côté serveur)
+  useLayoutEffect(() => {
+    if (!defaultPosition) {
+      const pos = centeredPos(size.width, size.height);
+      x.set(pos.x);
+      y.set(pos.y);
+      savedPos.current = pos;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Mount animation
   useEffect(() => {
     controls.start({
       opacity: 1,
       scale: 1,
-      y: 0,
       transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] },
     });
   }, [controls]);
@@ -181,7 +191,7 @@ export function Window({
   return (
     <motion.div
       animate={controls}
-      initial={{ opacity: 0, scale: 0.94, y: 8 }}
+      initial={{ opacity: 0, scale: 0.94 }}
       exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
       style={{
         position: 'fixed',

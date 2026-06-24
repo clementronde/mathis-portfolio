@@ -1,5 +1,6 @@
 'use client';
-import { motion } from 'framer-motion';
+import { useRef, type RefObject } from 'react';
+import { motion, useMotionValue, type PanInfo } from 'framer-motion';
 import { Folder } from 'lucide-react';
 import { encodeSrc } from '@/utils/path';
 
@@ -13,6 +14,8 @@ interface DesktopItemProps {
   aspectRatio?: string;
   width?: number;
   type?: 'photo' | 'folder' | 'map';
+  dragConstraints?: RefObject<HTMLElement | null>;
+  onMove?: (position: { left: number; top: number }) => void;
 }
 
 export function DesktopItem({
@@ -25,13 +28,65 @@ export function DesktopItem({
   aspectRatio = '3/4',
   width = 160,
   type = 'photo',
+  dragConstraints,
+  onMove,
 }: DesktopItemProps) {
+  const itemRef = useRef<HTMLButtonElement>(null);
+  const wasDragged = useRef(false);
+  const clickBlockTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
+    if (wasDragged.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    onClick?.();
+  }
+
+  function handleDragEnd(_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) {
+    if (Math.abs(info.offset.x) > 2 || Math.abs(info.offset.y) > 2) {
+      wasDragged.current = true;
+    }
+
+    const itemRect = itemRef.current?.getBoundingClientRect();
+    const boundsRect = dragConstraints?.current?.getBoundingClientRect();
+
+    if (itemRect && boundsRect) {
+      onMove?.({
+        left: Math.round(itemRect.left - boundsRect.left),
+        top: Math.round(itemRect.top - boundsRect.top),
+      });
+    }
+
+    x.set(0);
+    y.set(0);
+
+    clickBlockTimeout.current = setTimeout(() => {
+      wasDragged.current = false;
+    }, 0);
+  }
+
   return (
     <motion.button
-      className="absolute flex flex-col items-center gap-1.5 group outline-none"
-      style={{ rotate, ...style }}
-      onClick={onClick}
+      ref={itemRef}
+      className="absolute flex flex-col items-center gap-1.5 group outline-none cursor-grab active:cursor-grabbing touch-none"
+      style={{ rotate, x, y, ...style }}
+      drag
+      dragConstraints={dragConstraints}
+      dragElastic={0}
+      dragMomentum={false}
+      onDragStart={() => {
+        if (clickBlockTimeout.current) clearTimeout(clickBlockTimeout.current);
+        wasDragged.current = true;
+      }}
+      onDragEnd={handleDragEnd}
+      onClick={handleClick}
       whileHover={{ y: -4, scale: 1.03 }}
+      whileDrag={{ scale: 1.05, zIndex: 30 }}
       whileTap={{ scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 300, damping: 18 }}
       aria-label={`Ouvrir ${label}`}

@@ -37,21 +37,22 @@ export function Lightbox({ images, colors, current, onClose, onPrev, onNext }: L
         {/* Image */}
         <motion.div
           key={current}
-          className="relative max-w-[85vw] max-h-[85vh] flex items-center justify-center"
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.94 }}
           transition={{ duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={encodeSrc(images[current])}
+            alt={`Photo ${current + 1}`}
             style={{
-              width: 'min(640px, 80vw)',
-              aspectRatio: '2/3',
-              background: colors[current] ?? '#1a1a1a',
-              backgroundImage: `url("${encodeSrc(images[current])}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              maxWidth: '85vw',
+              maxHeight: '85vh',
+              width: 'auto',
+              height: 'auto',
+              display: 'block',
               borderRadius: 8,
               boxShadow: '0 24px 80px rgba(0,0,0,0.8)',
             }}

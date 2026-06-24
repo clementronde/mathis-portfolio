@@ -312,8 +312,8 @@ export const PROJECTS: Project[] = [
     location: 'Sète, France',
     year: 2025,
     description: "Séjour TBS à Sète. Méditerranée, vie étudiante et portraits de groupe.",
-    coverImage: '/images/projects/25-10 TBS_SÈTE/MSA00004 2.avif',
-    images: p('25-10 TBS_SÈTE', 'MSA00004 2.avif', 'MSA00038.avif', 'MSA00146.avif', 'MSA00203.avif', 'MSA00260.avif'),
+    coverImage: '/images/projects/25-10 TBS_SÈTE/MSA00004 2.avif',
+    images: p('25-10 TBS_SÈTE', 'MSA00004 2.avif', 'MSA00038.avif', 'MSA00146.avif', 'MSA00203.avif', 'MSA00260.avif'),
     color: '#0a1e2e',
   },
   {
