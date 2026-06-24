@@ -1,42 +1,51 @@
 'use client';
-import {
-  Folder,
-  Mail,
-  StickyNote,
-  ImageIcon,
-  Music2,
-  MapPin,
-} from 'lucide-react';
+import { useState } from 'react';
+import { Folder, Mail, StickyNote, ImageIcon, Music2, MapPin } from 'lucide-react';
 import type { AppId } from '@/store/useWindowStore';
 
-function LightroomIcon({ size = 28 }: { size?: number }) {
+const ICON_FILES: Partial<Record<AppId, string>> = {
+  finder:    '/images/icons/Findericon.png',
+  mail:      '/images/icons/Mailicon.png',
+  notes:     '/images/icons/noteicon.png',
+  photos:    '/images/icons/Photosicon.png',
+  music:     '/images/icons/musiqueIcon.png',
+  maps:      '/images/icons/localistionicon.png',
+  lightroom: '/images/icons/lightroom.webp',
+  photoshop: '/images/icons/photoshopicon.webp',
+  premiere:  '/images/icons/premiereproicon.png',
+};
+
+function IconWithFallback({
+  id,
+  size,
+  fallback,
+}: {
+  id: AppId;
+  size: number;
+  fallback: React.ReactNode;
+}) {
+  const [failed, setFailed] = useState(false);
+  const src = ICON_FILES[id];
+
+  if (failed || !src) return <>{fallback}</>;
+
   return (
-    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
-      <rect width="28" height="28" rx="6" fill="#001D26" />
-      <text x="5" y="20" fontSize="13" fontWeight="700" fill="#31A8FF" fontFamily="sans-serif">Lr</text>
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={id}
+      width={size}
+      height={size}
+      onError={() => setFailed(true)}
+      style={{ width: size, height: size, borderRadius: size * 0.22, objectFit: 'cover', display: 'block' }}
+      draggable={false}
+    />
   );
 }
 
-function PhotoshopIcon({ size = 28 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
-      <rect width="28" height="28" rx="6" fill="#001C26" />
-      <text x="4" y="20" fontSize="12" fontWeight="700" fill="#31A8FF" fontFamily="sans-serif">Ps</text>
-    </svg>
-  );
-}
+/* ── Fallback built-in icons ─────────────────────────────────── */
 
-function PremiereIcon({ size = 28 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
-      <rect width="28" height="28" rx="6" fill="#0D0D26" />
-      <text x="4" y="20" fontSize="12" fontWeight="700" fill="#9999FF" fontFamily="sans-serif">Pr</text>
-    </svg>
-  );
-}
-
-function FinderIcon({ size = 28 }: { size?: number }) {
+function FinderFallback({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
       <rect width="28" height="28" rx="6" fill="#1B5EBF" />
@@ -49,55 +58,90 @@ function FinderIcon({ size = 28 }: { size?: number }) {
   );
 }
 
-interface AppIconProps {
-  id: AppId;
-  size?: number;
-  className?: string;
+function LightroomFallback({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#001D26" />
+      <text x="5" y="20" fontSize="13" fontWeight="700" fill="#31A8FF" fontFamily="sans-serif">Lr</text>
+    </svg>
+  );
 }
 
-export function AppIcon({ id, size = 28, className }: AppIconProps) {
-  const iconSize = size * 0.6;
-  const wrapperStyle = { width: size, height: size };
+function PhotoshopFallback({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#001C26" />
+      <text x="4" y="20" fontSize="12" fontWeight="700" fill="#31A8FF" fontFamily="sans-serif">Ps</text>
+    </svg>
+  );
+}
 
-  const wrappers: Record<string, { bg: string; color: string }> = {
-    mail: { bg: '#1B73E8', color: '#fff' },
-    notes: { bg: '#FFD60A', color: '#1a1a00' },
-    photos: { bg: '#fff', color: '#888' },
-    music: { bg: '#FC3C44', color: '#fff' },
-    maps: { bg: '#34C759', color: '#fff' },
-  };
+function PremiereFallback({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#0D0D26" />
+      <text x="4" y="20" fontSize="12" fontWeight="700" fill="#9999FF" fontFamily="sans-serif">Pr</text>
+    </svg>
+  );
+}
 
-  if (id === 'finder') return <FinderIcon size={size} />;
-  if (id === 'lightroom') return <LightroomIcon size={size} />;
-  if (id === 'photoshop') return <PhotoshopIcon size={size} />;
-  if (id === 'premiere') return <PremiereIcon size={size} />;
+const ICON_STYLES: Record<string, { bg: string; color: string }> = {
+  mail:  { bg: '#1B73E8', color: '#fff' },
+  notes: { bg: '#FFD60A', color: '#1a1a00' },
+  photos:{ bg: '#fff',    color: '#888' },
+  music: { bg: '#FC3C44', color: '#fff' },
+  maps:  { bg: '#34C759', color: '#fff' },
+};
 
-  const w = wrappers[id] ?? { bg: '#444', color: '#fff' };
+const LUCIDE_ICONS: Record<string, React.ComponentType<{ size: number }>> = {
+  mail:   Mail,
+  notes:  StickyNote,
+  photos: ImageIcon,
+  music:  Music2,
+  maps:   MapPin,
+};
 
-  const icons: Record<string, React.ReactNode> = {
-    mail: <Mail size={iconSize} />,
-    notes: <StickyNote size={iconSize} />,
-    photos: <ImageIcon size={iconSize} />,
-    music: <Music2 size={iconSize} />,
-    maps: <MapPin size={iconSize} />,
-  };
+function BuiltinFallback({ id, size }: { id: AppId; size: number }) {
+  if (id === 'finder')    return <FinderFallback size={size} />;
+  if (id === 'lightroom') return <LightroomFallback size={size} />;
+  if (id === 'photoshop') return <PhotoshopFallback size={size} />;
+  if (id === 'premiere')  return <PremiereFallback size={size} />;
+
+  const style = ICON_STYLES[id] ?? { bg: '#444', color: '#fff' };
+  const Icon  = LUCIDE_ICONS[id] ?? Folder;
+  const iconSize = Math.round(size * 0.52);
 
   return (
     <div
-      className={className}
       style={{
-        ...wrapperStyle,
+        width: size, height: size,
         borderRadius: size * 0.22,
-        background: w.bg,
-        color: w.color,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        background: style.bg,
+        color: style.color,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}
       aria-hidden="true"
     >
-      {icons[id] ?? <Folder size={iconSize} />}
+      <Icon size={iconSize} />
+    </div>
+  );
+}
+
+/* ── Public API ───────────────────────────────────────────────── */
+
+export function AppIcon({ id, size = 28, className }: {
+  id: AppId;
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <div className={className} style={{ width: size, height: size, flexShrink: 0 }}>
+      <IconWithFallback
+        id={id}
+        size={size}
+        fallback={<BuiltinFallback id={id} size={size} />}
+      />
     </div>
   );
 }

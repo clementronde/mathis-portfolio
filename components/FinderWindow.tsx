@@ -9,78 +9,19 @@ import { useWindowStore } from '@/store/useWindowStore';
 import { AppIcon } from './icons/AppIcons';
 import { encodeSrc } from '@/utils/path';
 
-/* ─── Mac-style folder icon ─────────────────────────────────────── */
-function FolderIcon({
-  coverImage,
-  color,
-  size = 72,
-}: {
-  coverImage: string;
-  color: string;
-  size?: number;
-}) {
+/* ─── Mac-style folder icon using dossiericon.png ───────────────── */
+function FolderIcon({ size = 72 }: { coverImage?: string; color?: string; size?: number }) {
   return (
-    <div style={{ width: size, height: size * 0.82, position: 'relative' }}>
-      {/* Back of folder */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '38%',
-          borderRadius: `${size * 0.07}px ${size * 0.18}px 0 0`,
-          background: `hsl(from ${color} h s calc(l + 8%))`,
-          backgroundColor: adjustColor(color, 15),
-        }}
-      />
-      {/* Main folder body */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          top: '16%',
-          borderRadius: size * 0.1,
-          background: adjustColor(color, 8),
-          boxShadow: `inset 0 -2px 4px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12)`,
-          overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {/* Photo thumbnail inside folder */}
-        <div
-          style={{
-            width: '65%',
-            height: '65%',
-            borderRadius: size * 0.05,
-            backgroundImage: `url("${encodeSrc(coverImage)}")`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            background: color,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-            backgroundBlendMode: 'normal',
-          }}
-        />
-      </div>
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/images/icons/dossiericon.png"
+      alt=""
+      width={size}
+      height={size}
+      style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
+      draggable={false}
+    />
   );
-}
-
-// Simple color brightening helper
-function adjustColor(hex: string, amount: number): string {
-  try {
-    const num = parseInt(hex.replace('#', ''), 16);
-    const r = Math.min(255, (num >> 16) + amount);
-    const g = Math.min(255, ((num >> 8) & 0xff) + amount);
-    const b = Math.min(255, (num & 0xff) + amount);
-    return `rgb(${r},${g},${b})`;
-  } catch {
-    return hex;
-  }
 }
 
 /* ─── Sidebar items ──────────────────────────────────────────────── */
@@ -143,16 +84,16 @@ export function FinderWindow() {
       defaultPosition={{ x: 60, y: 40 }}
       defaultSize={{ width: 860, height: 580 }}
     >
-      <div className="flex h-full text-white" style={{ background: '#1c1c1e' }}>
+      <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
 
         {/* ── Sidebar ── */}
         <div
           className="w-44 shrink-0 flex flex-col py-3 overflow-y-auto"
-          style={{ background: '#1a1a1c', borderRight: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ background: '#f2f2f7', borderRight: '1px solid rgba(0,0,0,0.1)' }}
         >
           {SIDEBAR_SECTIONS.map((section) => (
             <div key={section.label} className="mb-3">
-              <p className="text-[10px] font-semibold text-white/30 uppercase tracking-wider px-3 mb-1">
+              <p className="text-[10px] font-semibold uppercase tracking-wider px-3 mb-1" style={{ color: 'rgba(60,60,67,0.4)' }}>
                 {section.label}
               </p>
               {section.items.map((item) => {
@@ -161,10 +102,12 @@ export function FinderWindow() {
                   <button
                     key={item.label}
                     onClick={() => { setSidebarFilter(item.id ?? null); setSelectedProject(null); }}
-                    className={`flex items-center gap-2 w-full px-3 py-1.5 text-[13px] rounded-md mx-0 text-left transition-colors ${
-                      active ? 'bg-white/15 text-white' : 'text-white/55 hover:bg-white/8 hover:text-white/90'
-                    }`}
-                    style={{ marginLeft: 4, marginRight: 4, width: 'calc(100% - 8px)' }}
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] rounded-md text-left transition-colors"
+                    style={{
+                      marginLeft: 4, marginRight: 4, width: 'calc(100% - 8px)',
+                      background: active ? 'rgba(0,122,255,0.15)' : 'transparent',
+                      color: active ? '#007AFF' : 'rgba(60,60,67,0.7)',
+                    }}
                   >
                     <span>{item.label}</span>
                   </button>
@@ -175,19 +118,19 @@ export function FinderWindow() {
 
           {/* Project list */}
           <div className="mt-1">
-            <p className="text-[10px] font-semibold text-white/30 uppercase tracking-wider px-3 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wider px-3 mb-1" style={{ color: 'rgba(60,60,67,0.4)' }}>
               Projets
             </p>
             {PROJECTS.map((p) => (
               <button
                 key={p.id}
                 onClick={() => { setSelectedProject(p); setSidebarFilter(null); }}
-                className={`flex items-center gap-2 w-full px-3 py-1 text-[12px] rounded-md text-left transition-colors truncate ${
-                  selectedProject?.id === p.id
-                    ? 'bg-white/15 text-white'
-                    : 'text-white/45 hover:bg-white/8 hover:text-white/80'
-                }`}
-                style={{ marginLeft: 4, marginRight: 4, width: 'calc(100% - 8px)' }}
+                className="flex items-center gap-2 w-full px-3 py-1 text-[12px] rounded-md text-left transition-colors truncate"
+                style={{
+                  marginLeft: 4, marginRight: 4, width: 'calc(100% - 8px)',
+                  background: selectedProject?.id === p.id ? 'rgba(0,122,255,0.15)' : 'transparent',
+                  color: selectedProject?.id === p.id ? '#007AFF' : 'rgba(60,60,67,0.65)',
+                }}
               >
                 <div
                   className="w-3.5 h-3.5 rounded-sm shrink-0"
@@ -209,28 +152,29 @@ export function FinderWindow() {
           {/* Toolbar */}
           <div
             className="flex items-center gap-2 px-4 h-10 shrink-0"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#1c1c1e' }}
+            style={{ borderBottom: '1px solid rgba(0,0,0,0.1)', background: '#f9f9f9' }}
           >
             {selectedProject ? (
               <button
                 onClick={() => setSelectedProject(null)}
                 aria-label="Retour"
-                className="flex items-center gap-1 text-white/50 hover:text-white/90 transition-colors"
+                className="flex items-center gap-1 transition-colors"
+                style={{ color: '#007AFF' }}
               >
                 <ChevronLeft size={14} />
                 <span className="text-[12px]">Retour</span>
               </button>
             ) : (
-              <span className="text-[13px] font-semibold text-white/80">{title}</span>
+              <span className="text-[13px] font-semibold" style={{ color: '#1d1d1f' }}>{title}</span>
             )}
 
             {selectedProject && (
               <>
-                <ChevronRight size={12} className="text-white/25" />
-                <span className="text-[13px] font-medium text-white/70 truncate">
+                <ChevronRight size={12} style={{ color: 'rgba(0,0,0,0.25)' }} />
+                <span className="text-[13px] font-medium truncate" style={{ color: 'rgba(0,0,0,0.65)' }}>
                   {selectedProject.title}
                 </span>
-                <span className="text-[11px] text-white/30 ml-1 hidden sm:inline">
+                <span className="text-[11px] ml-1 hidden sm:inline" style={{ color: 'rgba(0,0,0,0.35)' }}>
                   · {selectedProject.location} · {selectedProject.year}
                 </span>
               </>
@@ -238,11 +182,13 @@ export function FinderWindow() {
 
             <div className="ml-auto flex gap-1">
               <button onClick={() => setView('grid')} aria-label="Grille"
-                className={`p-1.5 rounded transition-colors ${view === 'grid' ? 'text-white bg-white/10' : 'text-white/35 hover:text-white/70'}`}>
+                className="p-1.5 rounded transition-colors"
+                style={{ color: view === 'grid' ? '#007AFF' : 'rgba(0,0,0,0.35)', background: view === 'grid' ? 'rgba(0,122,255,0.12)' : 'transparent' }}>
                 <Grid2x2 size={13} />
               </button>
               <button onClick={() => setView('list')} aria-label="Liste"
-                className={`p-1.5 rounded transition-colors ${view === 'list' ? 'text-white bg-white/10' : 'text-white/35 hover:text-white/70'}`}>
+                className="p-1.5 rounded transition-colors"
+                style={{ color: view === 'list' ? '#007AFF' : 'rgba(0,0,0,0.35)', background: view === 'list' ? 'rgba(0,122,255,0.12)' : 'transparent' }}>
                 <List size={13} />
               </button>
             </div>
@@ -259,7 +205,7 @@ export function FinderWindow() {
                   initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
                 >
-                  <p className="text-[12px] text-white/40 mb-4 leading-relaxed">
+                  <p className="text-[12px] mb-4 leading-relaxed" style={{ color: 'rgba(0,0,0,0.45)' }}>
                     {selectedProject.description}
                   </p>
                   <div className={view === 'grid' ? 'grid grid-cols-3 gap-3' : 'flex flex-col gap-1.5'}>
@@ -275,17 +221,21 @@ export function FinderWindow() {
                               background: selectedProject.color,
                               backgroundImage: `url("${encodeSrc(img)}")`,
                               backgroundSize: 'cover', backgroundPosition: 'center',
-                              boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                             }} />
                         ) : (
-                          <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                          <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg transition-colors"
+                            style={{ background: 'transparent' }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,0,0,0.04)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                          >
                             <div className="w-10 h-10 rounded-md shrink-0"
                               style={{
                                 background: selectedProject.color,
                                 backgroundImage: `url("${encodeSrc(img)}")`,
                                 backgroundSize: 'cover',
                               }} />
-                            <span className="text-[12px] text-white/60">
+                            <span className="text-[12px]" style={{ color: 'rgba(0,0,0,0.55)' }}>
                               {selectedProject.id}_{String(i + 1).padStart(2, '0')}.jpg
                             </span>
                           </div>
@@ -308,7 +258,6 @@ export function FinderWindow() {
                 >
                   {visibleProjects.map((p) =>
                     view === 'grid' ? (
-                      /* Mac-style folder icon */
                       <motion.button
                         key={p.id}
                         onClick={() => setSelectedProject(p)}
@@ -317,18 +266,21 @@ export function FinderWindow() {
                         className="flex flex-col items-center gap-1.5 group outline-none"
                       >
                         <FolderIcon coverImage={p.coverImage} color={p.color} size={80} />
-                        <span className="text-[11px] text-white/65 group-hover:text-white transition-colors text-center leading-tight max-w-[90px] truncate">
+                        <span className="text-[11px] text-center leading-tight max-w-[90px] truncate transition-colors"
+                          style={{ color: 'rgba(0,0,0,0.6)' }}>
                           {p.title}
                         </span>
-                        <span className="text-[9px] text-white/25">{p.images.length} photos</span>
+                        <span className="text-[9px]" style={{ color: 'rgba(0,0,0,0.3)' }}>{p.images.length} photos</span>
                       </motion.button>
                     ) : (
-                      /* List row */
                       <motion.button
                         key={p.id}
                         onClick={() => setSelectedProject(p)}
                         aria-label={`Ouvrir ${p.title}`}
-                        className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-white/5 transition-colors text-left group"
+                        className="flex items-center gap-3 w-full px-2 py-2 rounded-lg transition-colors text-left group"
+                        style={{ background: 'transparent' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,0,0,0.04)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0"
                           style={{
@@ -337,11 +289,11 @@ export function FinderWindow() {
                             backgroundSize: 'cover', backgroundPosition: 'center',
                           }} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] text-white/80 group-hover:text-white truncate">{p.title}</p>
-                          <p className="text-[11px] text-white/30">{p.category} · {p.year}</p>
+                          <p className="text-[13px] truncate" style={{ color: 'rgba(0,0,0,0.8)' }}>{p.title}</p>
+                          <p className="text-[11px]" style={{ color: 'rgba(0,0,0,0.4)' }}>{p.category} · {p.year}</p>
                         </div>
-                        <span className="text-[11px] text-white/25 shrink-0">{p.images.length} photos</span>
-                        <ChevronRight size={13} className="text-white/20 shrink-0" />
+                        <span className="text-[11px] shrink-0" style={{ color: 'rgba(0,0,0,0.3)' }}>{p.images.length} photos</span>
+                        <ChevronRight size={13} style={{ color: 'rgba(0,0,0,0.2)' }} className="shrink-0" />
                       </motion.button>
                     )
                   )}

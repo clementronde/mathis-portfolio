@@ -19,7 +19,7 @@ const DESKTOP_ITEMS = [
   {
     id: 'noclout-item',
     label: 'NOCLOUT',
-    imageSrc: '/images/projects/24-11-02 NOCLOUT/MSA00088.jpg',
+    imageSrc: '/images/projects/24-11-02 NOCLOUT/MSA00088.avif',
     imageColor: '#0a0a0a',
     rotate: -3,
     style: { left: '5%', top: '13%' },
@@ -31,7 +31,7 @@ const DESKTOP_ITEMS = [
   {
     id: 'rats-item',
     label: 'Les Rats',
-    imageSrc: '/images/projects/25-07-25 SHOOT_LES RATS/MSA00016.jpg',
+    imageSrc: '/images/projects/25-07-25 SHOOT_LES RATS/MSA00016.avif',
     imageColor: '#0a0a0f',
     rotate: 1.5,
     style: { left: '21%', top: '17%' },
@@ -43,7 +43,7 @@ const DESKTOP_ITEMS = [
   {
     id: 'mariage-item',
     label: 'Mariage H&E',
-    imageSrc: '/images/projects/25-08-22 MARIAGE H&E/MSA00038_1.jpg',
+    imageSrc: '/images/projects/25-08-22 MARIAGE H&E/MSA00038_1.avif',
     imageColor: '#1a1208',
     rotate: 0.5,
     style: { left: '40%', top: '12%' },
@@ -55,7 +55,7 @@ const DESKTOP_ITEMS = [
   {
     id: 'lisboa-item',
     label: 'Lisboa',
-    imageSrc: '/images/projects/26-04-03 LISBOA/MSA00125.jpg',
+    imageSrc: '/images/projects/26-04-03 LISBOA/MSA00125.avif',
     imageColor: '#1a1e0a',
     rotate: 2,
     style: { right: '17%', top: '10%' },
@@ -67,7 +67,7 @@ const DESKTOP_ITEMS = [
   {
     id: 'berlin-item',
     label: 'Berlin',
-    imageSrc: '/images/projects/25-02-20 BERLIN/MSA00807.jpg',
+    imageSrc: '/images/projects/25-02-20 BERLIN/MSA00807.avif',
     imageColor: '#0f0f0f',
     rotate: -1.5,
     style: { right: '4%', top: '7%' },
@@ -132,30 +132,12 @@ export function Desktop() {
     <div
       className="fixed inset-0 overflow-hidden select-none"
       style={{
-        backgroundImage: `url('/images/wallpaper.jpg')`,
+        backgroundImage: `url('/images/wallpaper.avif')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundColor: '#1a1208',
+        backgroundColor: '#6aa3c5',
       }}
     >
-      {/* Grain overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none z-[1]"
-        aria-hidden="true"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")`,
-          mixBlendMode: 'overlay',
-        }}
-      />
-
-      {/* Vignette */}
-      <div
-        className="absolute inset-0 pointer-events-none z-[1]"
-        aria-hidden="true"
-        style={{
-          background: 'radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 100%)',
-        }}
-      />
 
       <TopBar />
 
