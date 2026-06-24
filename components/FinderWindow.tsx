@@ -26,44 +26,171 @@ function FolderIcon({ size = 72 }: { coverImage?: string; color?: string; size?:
 
 const FINDER_PROJECT_IDS = ['otacos-lolla', 'tbs-sete'];
 const FINDER_PROJECTS = PROJECTS.filter((project) => FINDER_PROJECT_IDS.includes(project.id));
+const DESKTOP_PROJECT_IDS = ['noclout', 'shoot-les-rats', 'mariage-he', 'lisboa', 'berlin'];
+const DESKTOP_PROJECTS = PROJECTS.filter((project) => DESKTOP_PROJECT_IDS.includes(project.id));
+
+type FinderSection = 'recents' | 'desktop' | 'documents' | 'downloads' | 'applications';
 
 const SIDEBAR_ITEMS = [
-  { label: 'Récents', icon: Clock },
-  { label: 'Bureau', icon: Monitor },
-  { label: 'Documents', icon: FileText },
-  { label: 'Téléchargement', icon: Download },
-  { label: 'Applications', icon: AppWindow },
-];
+  { id: 'desktop', label: 'Bureau', icon: Monitor },
+  { id: 'documents', label: 'Documents', icon: FileText },
+  { id: 'downloads', label: 'Téléchargement', icon: Download },
+  { id: 'applications', label: 'Applications', icon: AppWindow },
+] satisfies { id: FinderSection; label: string; icon: typeof Monitor }[];
+
+const SECTION_PROJECTS: Record<FinderSection, Project[]> = {
+  recents: FINDER_PROJECTS,
+  desktop: DESKTOP_PROJECTS,
+  documents: FINDER_PROJECTS,
+  downloads: FINDER_PROJECTS,
+  applications: FINDER_PROJECTS,
+};
+
+const SECTION_TITLES: Record<FinderSection, string> = {
+  recents: 'Récents',
+  desktop: 'Bureau',
+  documents: 'Documents',
+  downloads: 'Téléchargement',
+  applications: 'Applications',
+};
+
+const PROJECT_SECTION_BY_ID = new Map<string, FinderSection>([
+  ...FINDER_PROJECTS.map((project) => [project.id, 'documents'] as const),
+  ...DESKTOP_PROJECTS.map((project) => [project.id, 'desktop'] as const),
+]);
+
+const ALL_FINDER_PROJECTS = [...FINDER_PROJECTS, ...DESKTOP_PROJECTS].filter(
+  (project, index, projects) => projects.findIndex((p) => p.id === project.id) === index
+);
+
+function findFinderProject(id: string | null) {
+  if (!id) return null;
+  return ALL_FINDER_PROJECTS.find((project) => project.id === id) ?? null;
+}
+
+function getProjectSection(project: Project | null): FinderSection | null {
+  return project ? PROJECT_SECTION_BY_ID.get(project.id) ?? null : null;
+}
+
+function getSectionProjects(section: FinderSection) {
+  return SECTION_PROJECTS[section];
+}
+
+function getSidebarButtonStyle(active: boolean): React.CSSProperties {
+  return {
+    marginLeft: 4,
+    marginRight: 4,
+    width: 'calc(100% - 8px)',
+    background: active ? 'rgba(0,0,0,0.06)' : 'transparent',
+    color: '#1d1d1f',
+  };
+}
+
+function ProjectFolderGrid({
+  projects,
+  onOpen,
+}: {
+  projects: Project[];
+  onOpen: (project: Project) => void;
+}) {
+  return (
+    <>
+      {projects.map((p) => (
+        <motion.button
+          key={p.id}
+          onClick={() => onOpen(p)}
+          aria-label={`Ouvrir ${p.title}`}
+          whileHover={{ y: -2 }}
+          className="flex flex-col items-center gap-1.5 group outline-none"
+        >
+          <FolderIcon coverImage={p.coverImage} color={p.color} size={80} />
+          <span className="text-[11px] text-center leading-tight max-w-[90px] truncate transition-colors"
+            style={{ color: 'rgba(0,0,0,0.6)' }}>
+            {p.title}
+          </span>
+          <span className="text-[9px]" style={{ color: 'rgba(0,0,0,0.3)' }}>{p.images.length} photos</span>
+        </motion.button>
+      ))}
+    </>
+  );
+}
+
+function SidebarProjectList({
+  projects,
+  selectedProject,
+  onOpen,
+}: {
+  projects: Project[];
+  selectedProject: Project | null;
+  onOpen: (project: Project) => void;
+}) {
+  return (
+    <div className="mt-1">
+      <p className="text-[10px] font-semibold uppercase tracking-wider px-3 mb-1" style={{ color: 'rgba(60,60,67,0.4)' }}>
+        Projets
+      </p>
+      {projects.map((p) => (
+        <button
+          key={p.id}
+          onClick={() => onOpen(p)}
+          className="flex items-center gap-2 w-full px-3 py-1 text-[12px] rounded-md text-left transition-colors truncate"
+          style={getSidebarButtonStyle(selectedProject?.id === p.id)}
+        >
+          <div
+            className="w-3.5 h-3.5 rounded-sm shrink-0"
+            style={{
+              background: p.color,
+              backgroundImage: `url("${encodeSrc(p.coverImage)}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <span className="truncate">{p.title}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 /* ─── Main component ─────────────────────────────────────────────── */
 export function FinderWindow() {
   const { finderFolder } = useWindowStore();
   const [selectedProject, setSelectedProject] = useState<Project | null>(
-    () => FINDER_PROJECTS.find((p) => p.id === finderFolder) ?? null
+    () => findFinderProject(finderFolder)
+  );
+  const [activeSection, setActiveSection] = useState<FinderSection>(
+    () => getProjectSection(findFinderProject(finderFolder)) ?? 'documents'
   );
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
-    if (finderFolder) {
-      const proj = FINDER_PROJECTS.find((p) => p.id === finderFolder);
-      if (proj) {
-        setSelectedProject(proj);
-        setActiveImageIndex(0);
-      }
+    const proj = findFinderProject(finderFolder);
+    if (proj) {
+      setSelectedProject(proj);
+      setActiveSection(getProjectSection(proj) ?? 'documents');
+      setActiveImageIndex(0);
     }
   }, [finderFolder]);
 
   function openProject(project: Project) {
     setSelectedProject(project);
+    setActiveSection(getProjectSection(project) ?? activeSection);
+    setActiveImageIndex(0);
+  }
+
+  function openSection(section: FinderSection) {
+    setActiveSection(section);
+    setSelectedProject(null);
     setActiveImageIndex(0);
   }
 
   const title = selectedProject
     ? selectedProject.title
-    : 'Documents';
+    : SECTION_TITLES[activeSection];
 
   const activeImage = selectedProject?.images[activeImageIndex] ?? selectedProject?.coverImage;
+  const visibleProjects = getSectionProjects(activeSection);
 
   return (
     <Window
@@ -81,13 +208,9 @@ export function FinderWindow() {
           style={{ background: '#f2f2f7', borderRight: '1px solid rgba(0,0,0,0.1)' }}
         >
           <button
-            onClick={() => setSelectedProject(null)}
+            onClick={() => openSection('recents')}
             className="flex items-center gap-2 px-3 py-1.5 text-[13px] rounded-md text-left transition-colors"
-            style={{
-              marginLeft: 4, marginRight: 4, width: 'calc(100% - 8px)',
-              background: !selectedProject ? 'rgba(0,0,0,0.06)' : 'transparent',
-              color: '#1d1d1f',
-            }}
+            style={getSidebarButtonStyle(activeSection === 'recents' && !selectedProject)}
           >
             <Clock size={15} />
             <span>Récents</span>
@@ -97,18 +220,14 @@ export function FinderWindow() {
             <p className="text-[10px] font-semibold px-3 mb-1" style={{ color: 'rgba(60,60,67,0.5)' }}>
               Favoris
             </p>
-            {SIDEBAR_ITEMS.slice(1).map(({ label, icon: Icon }) => {
-              const active = label === 'Documents' && !selectedProject;
+            {SIDEBAR_ITEMS.map(({ id, label, icon: Icon }) => {
+              const active = activeSection === id && !selectedProject;
               return (
                 <button
                   key={label}
-                  onClick={() => setSelectedProject(null)}
+                  onClick={() => openSection(id)}
                   className="flex items-center gap-2 px-3 py-1.5 text-[13px] rounded-md text-left transition-colors"
-                  style={{
-                    marginLeft: 4, marginRight: 4, width: 'calc(100% - 8px)',
-                    background: active ? 'rgba(0,0,0,0.06)' : 'transparent',
-                    color: '#1d1d1f',
-                  }}
+                  style={getSidebarButtonStyle(active)}
                 >
                   <Icon size={15} />
                   <span>{label}</span>
@@ -117,35 +236,11 @@ export function FinderWindow() {
             })}
           </div>
 
-          {/* Project list */}
-          <div className="mt-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider px-3 mb-1" style={{ color: 'rgba(60,60,67,0.4)' }}>
-              Projets
-            </p>
-            {FINDER_PROJECTS.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => openProject(p)}
-                className="flex items-center gap-2 w-full px-3 py-1 text-[12px] rounded-md text-left transition-colors truncate"
-                style={{
-                  marginLeft: 4, marginRight: 4, width: 'calc(100% - 8px)',
-                  background: selectedProject?.id === p.id ? 'rgba(0,0,0,0.06)' : 'transparent',
-                  color: '#1d1d1f',
-                }}
-              >
-                <div
-                  className="w-3.5 h-3.5 rounded-sm shrink-0"
-                  style={{
-                    background: p.color,
-                    backgroundImage: `url("${encodeSrc(p.coverImage)}")`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
-                />
-                <span className="truncate">{p.title}</span>
-              </button>
-            ))}
-          </div>
+          <SidebarProjectList
+            projects={visibleProjects}
+            selectedProject={selectedProject}
+            onOpen={openProject}
+          />
         </div>
 
         {/* ── Main content ── */}
@@ -270,28 +365,13 @@ export function FinderWindow() {
               ) : (
                 /* Folder grid view */
                 <motion.div
-                  key="documents"
+                  key={activeSection}
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
                   className="h-full grid content-start gap-x-8 gap-y-6 p-8"
                   style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(116px, 1fr))' }}
                 >
-                  {FINDER_PROJECTS.map((p) => (
-                      <motion.button
-                        key={p.id}
-                        onClick={() => openProject(p)}
-                        aria-label={`Ouvrir ${p.title}`}
-                        whileHover={{ y: -2 }}
-                        className="flex flex-col items-center gap-1.5 group outline-none"
-                      >
-                        <FolderIcon coverImage={p.coverImage} color={p.color} size={80} />
-                        <span className="text-[11px] text-center leading-tight max-w-[90px] truncate transition-colors"
-                          style={{ color: 'rgba(0,0,0,0.6)' }}>
-                          {p.title}
-                        </span>
-                        <span className="text-[9px]" style={{ color: 'rgba(0,0,0,0.3)' }}>{p.images.length} photos</span>
-                      </motion.button>
-                  ))}
+                  <ProjectFolderGrid projects={visibleProjects} onOpen={openProject} />
                 </motion.div>
               )}
             </AnimatePresence>

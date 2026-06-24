@@ -1,9 +1,11 @@
 export function encodeSrc(rawPath: string): string {
   if (!rawPath) return '';
-  const prefix = rawPath.startsWith('/') ? '/' : '';
+  // Normalize to NFC so NFD filenames (macOS HFS+) match what git/Vercel deploy
+  const path = rawPath.normalize('NFC');
+  const prefix = path.startsWith('/') ? '/' : '';
   return (
     prefix +
-    (prefix ? rawPath.slice(1) : rawPath)
+    (prefix ? path.slice(1) : path)
       .split('/')
       .map(encodeURIComponent)
       .join('/')
