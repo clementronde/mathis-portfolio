@@ -1,7 +1,15 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import { useWindowStore } from '@/store/useWindowStore';
+import {
+  useScrollytellingStore,
+  getOpenStepIndexForApp,
+  getStepAppId,
+  getStepFinderFolder,
+  SCROLL_STEPS,
+} from '@/store/useScrollytellingStore';
 import { TopBar } from './TopBar';
 import { Dock } from './Dock';
 import { DesktopItem } from './DesktopItem';
@@ -81,6 +89,7 @@ const DESKTOP_ITEMS = [
 
 function MobileGrid() {
   const { openWindow } = useWindowStore();
+  const setStep = useScrollytellingStore((state) => state.setStep);
   const apps: { id: AppId; label: string }[] = [
     { id: 'finder', label: 'Finder' },
     { id: 'mail', label: 'Mail' },
@@ -99,7 +108,10 @@ function MobileGrid() {
         {apps.map(({ id, label }) => (
           <button
             key={id}
-            onClick={() => openWindow(id)}
+            onClick={() => {
+              openWindow(id);
+              setStep(getOpenStepIndexForApp(id));
+            }}
             aria-label={`Ouvrir ${label}`}
             className="flex flex-col items-center gap-1.5 group"
           >
@@ -137,8 +149,10 @@ function getDefaultItemPositions() {
 
 export function Desktop() {
   const { openWindows, openWindow } = useWindowStore();
+  const { step, nextStep, prevStep } = useScrollytellingStore();
   const desktopItemsRef = useRef<HTMLDivElement>(null);
   const [itemPositions, setItemPositions] = useState<Record<string, React.CSSProperties>>(getDefaultItemPositions);
+  const scrollCooldown = useRef(false);
 
   useEffect(() => {
     const savedPositions = window.localStorage.getItem(DESKTOP_ITEM_POSITIONS_KEY);
@@ -154,6 +168,62 @@ export function Desktop() {
       window.localStorage.removeItem(DESKTOP_ITEM_POSITIONS_KEY);
     }
   }, []);
+
+  // Sync step → window open/close
+  useEffect(() => {
+    const appId = getStepAppId(step);
+    const finderFolder = getStepFinderFolder(step);
+    const { openWindows: current, openWindow: open, closeWindow: close } = useWindowStore.getState();
+    current.forEach((id) => { if (id !== appId) close(id); });
+    if (appId) open(appId, appId === 'finder' ? finderFolder : undefined);
+  }, [step]);
+
+  // Wheel / touch scroll → advance/retreat step
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (scrollCooldown.current) return;
+      scrollCooldown.current = true;
+      setTimeout(() => { scrollCooldown.current = false; }, 900);
+      if (e.deltaY > 0) nextStep();
+      else if (e.deltaY < 0) prevStep();
+    };
+
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => { touchStartY = e.touches[0].clientY; };
+    const handleTouchEnd = (e: TouchEvent) => {
+      const delta = touchStartY - e.changedTouches[0].clientY;
+      if (Math.abs(delta) < 50 || scrollCooldown.current) return;
+      scrollCooldown.current = true;
+      setTimeout(() => { scrollCooldown.current = false; }, 900);
+      if (delta > 0) nextStep();
+      else prevStep();
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [nextStep, prevStep]);
+
+  // Keyboard navigation (arrow keys when no window is open)
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (getStepAppId(step) !== null) return; // let window handle its own keys
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        nextStep();
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevStep();
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [step, nextStep, prevStep]);
 
   return (
     <div
@@ -232,6 +302,44 @@ export function Desktop() {
       </div>
 
       <Dock />
+
+      {/* ── Scroll hint (step 0 only) ── */}
+      <AnimatePresence>
+        {step === 0 && (
+          <motion.div
+            key="scroll-hint"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.4 }}
+            className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[80] flex flex-col items-center gap-1.5 pointer-events-none select-none"
+          >
+            <span className="text-white/50 text-[11px] tracking-widest uppercase">Défiler pour explorer</span>
+            <motion.div
+              animate={{ y: [0, 5, 0] }}
+              transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+            >
+              <ChevronDown size={18} className="text-white/40" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Step progress dots ── */}
+      <div className="fixed right-4 top-1/2 -translate-y-1/2 z-[80] flex flex-col gap-2 pointer-events-none select-none">
+        {SCROLL_STEPS.map((_, i) => (
+          <div
+            key={i}
+            className="rounded-full transition-all duration-300"
+            style={{
+              width: i === step ? 6 : 5,
+              height: i === step ? 6 : 5,
+              background: i === step ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.22)',
+              transform: i === step ? 'scale(1.3)' : 'scale(1)',
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -16,7 +16,7 @@ interface WindowStore {
   openWindows: AppId[];
   activeWindow: AppId | null;
   finderFolder: string | null;
-  openWindow: (id: AppId, folder?: string) => void;
+  openWindow: (id: AppId, folder?: string | null) => void;
   closeWindow: (id: AppId) => void;
   focusWindow: (id: AppId) => void;
 }

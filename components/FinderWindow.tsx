@@ -170,6 +170,10 @@ export function FinderWindow() {
       setSelectedProject(proj);
       setActiveSection(getProjectSection(proj) ?? 'documents');
       setActiveImageIndex(0);
+    } else if (finderFolder === null) {
+      setSelectedProject(null);
+      setActiveSection('documents');
+      setActiveImageIndex(0);
     }
   }, [finderFolder]);
 

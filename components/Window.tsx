@@ -8,6 +8,11 @@ import {
 } from 'framer-motion';
 import { X, Minus, Maximize2, Minimize2 } from 'lucide-react';
 import { useWindowStore, type AppId } from '@/store/useWindowStore';
+import {
+  useScrollytellingStore,
+  getClosedStepIndexForApp,
+  getStepAppId,
+} from '@/store/useScrollytellingStore';
 
 interface WindowProps {
   id: AppId;
@@ -49,6 +54,8 @@ export function Window({
 }: WindowProps) {
   const { closeWindow, focusWindow, activeWindow } = useWindowStore();
   const isActive = activeWindow === id;
+  const { step, setStep } = useScrollytellingStore();
+  const isScrollytelling = getStepAppId(step) === id;
 
   const initPos = defaultPosition ?? centeredPos(defaultSize.width, defaultSize.height);
   const x = useMotionValue(initPos.x);
@@ -165,6 +172,15 @@ export function Window({
     setIsMaximized((v) => !v);
   }
 
+  function closeFromControls() {
+    if (isScrollytelling) {
+      setStep(getClosedStepIndexForApp(id));
+      return;
+    }
+
+    closeWindow(id);
+  }
+
   // ── Minimize to dock ──────────────────────────────────────────────────────
   async function handleMinimize() {
     const currentY = y.get();
@@ -176,23 +192,26 @@ export function Window({
       y: vh - currentY + 60,
       transition: { duration: 0.28, ease: [0.4, 0, 1, 1] },
     });
-    closeWindow(id);
+    closeFromControls();
   }
 
-  // Keyboard shortcut: Cmd+W equivalent (Escape closes)
+  // Keyboard shortcut: Escape closes / advances step
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isActive) closeWindow(id);
+      if (e.key === 'Escape' && isActive) {
+        closeFromControls();
+      }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [isActive, id, closeWindow]);
+  }, [isActive, closeFromControls]);
 
   return (
     <motion.div
       animate={controls}
       initial={{ opacity: 0, scale: 0.94 }}
       exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
+      data-window-container
       style={{
         position: 'fixed',
         left: 0,
@@ -225,7 +244,7 @@ export function Window({
         {/* Traffic lights */}
         <div className="flex items-center gap-1.5" aria-label="Contrôles">
           <button
-            onClick={() => closeWindow(id)}
+            onClick={closeFromControls}
             aria-label="Fermer"
             className="w-3 h-3 rounded-full bg-[#FF5F57] hover:bg-[#FF3B30] transition-colors flex items-center justify-center group"
           >

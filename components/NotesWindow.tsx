@@ -1,15 +1,26 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Window } from './Window';
 import { AppIcon } from './icons/AppIcons';
 import { NOTES, type Note } from '@/data/notes';
+import { useScrollytellingStore, getStepNoteIndex } from '@/store/useScrollytellingStore';
 
 export function NotesWindow() {
   const [selected, setSelected] = useState<Note>(NOTES[0]);
   const [filter, setFilter] = useState<'all' | 'pro' | 'perso'>('all');
+  const step = useScrollytellingStore((state) => state.step);
 
   const filtered = NOTES.filter((n) => filter === 'all' || n.category === filter);
+
+  useEffect(() => {
+    const noteIndex = getStepNoteIndex(step);
+    const nextNote = noteIndex !== undefined ? NOTES[noteIndex] : undefined;
+    if (!nextNote) return;
+
+    setFilter('all');
+    setSelected(nextNote);
+  }, [step]);
 
   return (
     <Window

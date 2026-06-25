@@ -3,9 +3,11 @@ import { motion } from 'framer-motion';
 import { DOCK_APPS } from '@/data/apps';
 import { AppIcon } from '@/components/icons/AppIcons';
 import { useWindowStore, type AppId } from '@/store/useWindowStore';
+import { getOpenStepIndexForApp, useScrollytellingStore } from '@/store/useScrollytellingStore';
 
 export function Dock() {
   const { openWindow, openWindows } = useWindowStore();
+  const setStep = useScrollytellingStore((state) => state.setStep);
 
   return (
     <div
@@ -25,7 +27,10 @@ export function Dock() {
         return (
           <motion.button
             key={app.id}
-            onClick={() => openWindow(app.id)}
+            onClick={() => {
+              openWindow(app.id);
+              setStep(getOpenStepIndexForApp(app.id));
+            }}
             aria-label={`Ouvrir ${app.label}`}
             title={app.label}
             className="relative flex flex-col items-center group outline-none"

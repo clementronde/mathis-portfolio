@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Window } from './Window';
 import { AppIcon } from './icons/AppIcons';
@@ -7,6 +7,7 @@ import { Lightbox } from './Lightbox';
 import { PROJECTS } from '@/data/projects';
 import { encodeSrc } from '@/utils/path';
 import { ImageIcon } from 'lucide-react';
+import { useScrollytellingStore, getStepPhotoScrollProgress } from '@/store/useScrollytellingStore';
 
 // Flatten all project images into a single list, tagged by project id
 const ALL_PHOTOS = PROJECTS.flatMap((proj) =>
@@ -18,12 +19,33 @@ const ALL_PHOTOS = PROJECTS.flatMap((proj) =>
 export function PhotosWindow() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const step = useScrollytellingStore((state) => state.step);
+  const galleryRef = useRef<HTMLDivElement>(null);
 
   const filtered = selectedProject
     ? ALL_PHOTOS.filter((p) => p.projectId === selectedProject)
     : ALL_PHOTOS;
 
   const currentProject = PROJECTS.find((p) => p.id === selectedProject);
+
+  useEffect(() => {
+    const progress = getStepPhotoScrollProgress(step);
+    if (progress === undefined) return;
+
+    setSelectedProject(null);
+    setLightboxIndex(null);
+
+    requestAnimationFrame(() => {
+      const gallery = galleryRef.current;
+      if (!gallery) return;
+
+      const maxScroll = gallery.scrollHeight - gallery.clientHeight;
+      gallery.scrollTo({
+        top: Math.max(0, maxScroll * progress),
+        behavior: 'smooth',
+      });
+    });
+  }, [step]);
 
   return (
     <Window
@@ -103,7 +125,7 @@ export function PhotosWindow() {
           </div>
 
           {/* Grid */}
-          <div className="flex-1 overflow-y-auto p-3">
+          <div ref={galleryRef} className="flex-1 overflow-y-auto p-3">
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedProject ?? 'all'}
