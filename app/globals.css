@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
   --font-geist: 'Geist', sans-serif;
@@ -11,10 +12,22 @@
 html, body {
   height: 100%;
   overflow: hidden;
+  font-size: 15px;
   font-family: var(--font-geist), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.text-\[23px\] { font-size: 21px !important; }
+.text-\[22px\] { font-size: 20px !important; }
+.text-\[20px\] { font-size: 18px !important; }
+.text-\[18px\] { font-size: 17px !important; }
+.text-\[17px\] { font-size: 15px !important; }
+.text-\[16px\] { font-size: 15px !important; }
+.text-\[15px\] { font-size: 14px !important; }
+.text-\[14px\] { font-size: 13px !important; }
+.text-\[13px\] { font-size: 12px !important; }
+.text-\[12px\] { font-size: 11px !important; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -46,4 +59,108 @@ html, body {
 .desktop-item {
   user-select: none;
   -webkit-user-select: none;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #dce8d3;
+  font-family: var(--font-geist), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.leaflet-control-attribution {
+  font-size: 10px !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  color: rgba(0, 0, 0, 0.48) !important;
+  border-radius: 4px 0 0 0;
+}
+
+.leaflet-control-zoom {
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14) !important;
+}
+
+.leaflet-control-zoom a {
+  color: rgba(0, 0, 0, 0.62) !important;
+}
+
+.maps-div-icon {
+  background: transparent;
+  border: 0;
+}
+
+.maps-marker {
+  position: relative;
+  width: 112px;
+  height: 104px;
+  transform-origin: 50% 70%;
+}
+
+.maps-fan {
+  position: absolute;
+  inset: 0;
+}
+
+.maps-photo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42px;
+  height: 56px;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transform:
+    translate(calc(-50% + var(--fan-x, 0px)), calc(-50% + var(--fan-y, 0px)))
+    rotate(var(--fan-rotation, 0deg));
+  transform-origin: 50% 82%;
+}
+
+.maps-photo:hover {
+  z-index: 80 !important;
+}
+
+.maps-photo-card {
+  display: block;
+  width: 42px;
+  height: 56px;
+  border: 2px solid #fff;
+  border-radius: 2px;
+  overflow: hidden;
+  transform: translateY(0);
+  will-change: transform;
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 160ms ease;
+}
+
+.maps-photo:hover .maps-photo-card {
+  transform: translateY(-16px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+.maps-photo-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.maps-label {
+  position: absolute;
+  left: 50%;
+  top: 78px;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 500;
+  color: #1d1d1f;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
+  cursor: pointer;
 }

@@ -21,6 +21,7 @@ export function PhotosWindow() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const step = useScrollytellingStore((state) => state.step);
   const galleryRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const filtered = selectedProject
     ? ALL_PHOTOS.filter((p) => p.projectId === selectedProject)
@@ -47,6 +48,23 @@ export function PhotosWindow() {
     });
   }, [step]);
 
+  useEffect(() => {
+    const sidebar = sidebarRef.current;
+    if (!sidebar) return;
+
+    const stopPropagation = (event: Event) => {
+      event.stopPropagation();
+    };
+
+    sidebar.addEventListener('wheel', stopPropagation);
+    sidebar.addEventListener('touchmove', stopPropagation);
+
+    return () => {
+      sidebar.removeEventListener('wheel', stopPropagation);
+      sidebar.removeEventListener('touchmove', stopPropagation);
+    };
+  }, []);
+
   return (
     <Window
       id="photos"
@@ -58,10 +76,12 @@ export function PhotosWindow() {
       <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
         {/* Sidebar */}
         <div
+          ref={sidebarRef}
           className="w-[210px] shrink-0 flex flex-col overflow-y-auto"
           style={{
             paddingTop: 100,
             paddingBottom: 24,
+            overscrollBehavior: 'contain',
             background: '#fbfbfb',
             borderTopLeftRadius: 24,
             borderBottomLeftRadius: 24,

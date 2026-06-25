@@ -26,64 +26,64 @@ import type { AppId } from '@/store/useWindowStore';
 // Desktop collage — 5 real projects
 const DESKTOP_ITEMS = [
   {
-    id: 'noclout-item',
-    label: 'NOCLOUT',
-    imageSrc: '/images/projects/24-11-02 NOCLOUT/MSA00088.avif',
-    imageColor: '#0a0a0a',
-    rotate: -3,
-    style: { left: '5%', top: '13%' },
-    width: 160,
-    aspectRatio: '2/3',
-    type: 'photo' as const,
-    action: { type: 'finder', folder: 'noclout' },
+    id: 'course-adidas-item',
+    label: 'Course Adidas',
+    imageSrc: undefined,
+    imageColor: '#d9f0dc',
+    rotate: 0,
+    style: { left: '8.5%', top: '15%' },
+    width: 285,
+    aspectRatio: '16/10',
+    type: 'map' as const,
+    action: { type: 'finder', folder: 'hrc-berck' },
   },
   {
     id: 'rats-item',
     label: 'Les Rats',
-    imageSrc: '/images/projects/25-07-25 SHOOT_LES RATS/MSA00016.avif',
+    imageSrc: '/images/projects/25-07-25 SHOOT_LES RATS/MSA00289.avif',
     imageColor: '#0a0a0f',
-    rotate: 1.5,
-    style: { left: '21%', top: '17%' },
-    width: 150,
-    aspectRatio: '3/4',
+    rotate: 0,
+    style: { left: '4%', bottom: '21%' },
+    width: 210,
+    aspectRatio: '4/5',
     type: 'photo' as const,
     action: { type: 'finder', folder: 'shoot-les-rats' },
   },
   {
-    id: 'mariage-item',
-    label: 'Mariage H&E',
-    imageSrc: '/images/projects/25-08-22 MARIAGE H&E/MSA00038_1.avif',
-    imageColor: '#1a1208',
-    rotate: 0.5,
-    style: { left: '40%', top: '12%' },
-    width: 170,
-    aspectRatio: '4/5',
+    id: 'family-item',
+    label: 'Family',
+    imageSrc: '/images/projects/25-12-23 NOEL_AYME/MSA00148.avif',
+    imageColor: '#2e1208',
+    rotate: 0,
+    style: { right: '12%', top: '6%' },
+    width: 265,
+    aspectRatio: '16/10',
     type: 'photo' as const,
-    action: { type: 'finder', folder: 'mariage-he' },
+    action: { type: 'finder', folder: 'noel-ayme' },
   },
   {
-    id: 'lisboa-item',
-    label: 'Lisboa',
-    imageSrc: '/images/projects/26-04-03 LISBOA/MSA00125.avif',
-    imageColor: '#1a1e0a',
-    rotate: 2,
-    style: { right: '17%', top: '10%' },
-    width: 175,
-    aspectRatio: '4/3',
-    type: 'photo' as const,
-    action: { type: 'finder', folder: 'lisboa' },
-  },
-  {
-    id: 'berlin-item',
-    label: 'Berlin',
-    imageSrc: '/images/projects/25-02-20 BERLIN/MSA00807.avif',
-    imageColor: '#0f0f0f',
-    rotate: -1.5,
-    style: { right: '4%', top: '7%' },
-    width: 140,
+    id: 'couscous-item',
+    label: 'Couscous',
+    imageSrc: '/images/projects/23-01 Maroc/DSC_0153.avif',
+    imageColor: '#2e1a00',
+    rotate: 0,
+    style: { right: '3.5%', top: '22%' },
+    width: 155,
     aspectRatio: '3/4',
     type: 'photo' as const,
-    action: { type: 'finder', folder: 'berlin' },
+    action: { type: 'finder', folder: 'maroc-2023' },
+  },
+  {
+    id: 'album-moment-item',
+    label: 'Album du moment',
+    imageSrc: '/images/projects/25-10-17 HEAVEN_ALTERANTS/V3 (1).avif',
+    imageColor: '#1a0a2e',
+    rotate: 0,
+    style: { right: '12%', bottom: '16%' },
+    width: 250,
+    aspectRatio: '4/3',
+    type: 'photo' as const,
+    action: { type: 'finder', folder: 'heaven-alterants' },
   },
 ] as const;
 
@@ -138,7 +138,7 @@ const WINDOWS: { id: AppId; element: React.ReactNode }[] = [
   { id: 'premiere',  element: <CreativeAppWindow key="premiere" id="premiere" /> },
 ];
 
-const DESKTOP_ITEM_POSITIONS_KEY = 'portfolio-desktop-item-positions';
+const DESKTOP_ITEM_POSITIONS_KEY = 'portfolio-desktop-item-positions-v2';
 
 function getDefaultItemPositions() {
   return DESKTOP_ITEMS.reduce<Record<string, React.CSSProperties>>((positions, item) => {
@@ -229,7 +229,7 @@ export function Desktop() {
     <div
       className="fixed inset-0 overflow-hidden select-none"
       style={{
-        backgroundImage: `url('/images/wallpaper.avif')`,
+        backgroundImage: `url('/images/wallpaper.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundColor: '#6aa3c5',
@@ -237,6 +237,19 @@ export function Desktop() {
     >
 
       <TopBar />
+
+      <div
+        className="absolute left-1/2 top-[72px] z-[9] -translate-x-1/2 hidden md:block pointer-events-none select-none"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/MSA.png"
+          alt="MSA"
+          className="block h-[58px] w-auto"
+          draggable={false}
+          style={{ filter: 'drop-shadow(0 2px 20px rgba(0,0,0,0.45))' }}
+        />
+      </div>
 
       {/* Desktop collage — desktop only */}
       <div ref={desktopItemsRef} className="absolute inset-0 z-[10] hidden md:block">

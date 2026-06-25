@@ -91,21 +91,73 @@ export function DesktopItem({
       transition={{ type: 'spring', stiffness: 300, damping: 18 }}
       aria-label={`Ouvrir ${label}`}
     >
-      {/* Image / folder */}
+      {/* Image / folder / map */}
       <div
         style={{
           width,
           aspectRatio,
           background: imageColor,
-          backgroundImage: imageSrc ? `url("${encodeSrc(imageSrc)}")` : undefined,
+          backgroundImage: imageSrc && type !== 'map' ? `url("${encodeSrc(imageSrc)}")` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           borderRadius: type === 'folder' ? 12 : 8,
           boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
           overflow: 'hidden',
+          position: 'relative',
         }}
         className="transition-shadow group-hover:shadow-[0_12px_32px_rgba(0,0,0,0.7)]"
       >
+        {type === 'map' && (
+          <div className="absolute inset-0" style={{ background: '#d9f0dc' }}>
+            <div
+              className="absolute inset-0 opacity-80"
+              style={{
+                backgroundImage:
+                  'linear-gradient(32deg, transparent 0 38%, rgba(90,160,210,0.35) 39% 42%, transparent 43%), linear-gradient(126deg, transparent 0 48%, rgba(90,160,210,0.28) 49% 52%, transparent 53%), linear-gradient(0deg, rgba(255,255,255,0.28) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.28) 1px, transparent 1px)',
+                backgroundSize: '100% 100%, 100% 100%, 34px 34px, 34px 34px',
+              }}
+            />
+            <div
+              className="absolute rounded-full"
+              style={{
+                left: '38%',
+                top: '46%',
+                width: '31%',
+                height: '26%',
+                background: '#acdceb',
+                border: '2px solid rgba(84,153,184,0.38)',
+              }}
+            />
+            <div
+              className="absolute rounded-full"
+              style={{
+                left: '64%',
+                top: '62%',
+                width: '22%',
+                height: '18%',
+                background: '#acdceb',
+                border: '2px solid rgba(84,153,184,0.38)',
+              }}
+            />
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 64" preserveAspectRatio="none">
+              <path
+                d="M20 16 L38 12 L51 19 L59 30 L52 38 L62 48 L55 57 L42 51 L36 39 L25 34 L17 25 Z"
+                fill="none"
+                stroke="#ff5b14"
+                strokeWidth="2.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span
+              className="absolute left-4 top-3 rounded-md px-2 py-1 text-[12px] font-semibold"
+              style={{ background: 'rgba(255,255,255,0.88)', color: '#5d6570' }}
+            >
+              Long Run
+            </span>
+          </div>
+        )}
+
         {type === 'folder' && !imageSrc && (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 opacity-60">
             <Folder size={40} className="text-white" />
