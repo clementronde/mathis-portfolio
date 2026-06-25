@@ -6,7 +6,7 @@ import { AppIcon } from './icons/AppIcons';
 import { Lightbox } from './Lightbox';
 import { PROJECTS } from '@/data/projects';
 import { encodeSrc } from '@/utils/path';
-import { Folder, ImageIcon } from 'lucide-react';
+import { Folder, ImageIcon, Minus, Plus } from 'lucide-react';
 import { useScrollytellingStore, getStepPhotoScrollProgress } from '@/store/useScrollytellingStore';
 
 // Flatten all project images into a single list, tagged by project id
@@ -16,18 +16,47 @@ const ALL_PHOTOS = PROJECTS.flatMap((proj) =>
     .map((img, i) => ({ src: img, color: proj.color, projectId: proj.id, key: `${proj.id}-${i}` }))
 );
 
+const ZOOM_MIN = 0;
+const ZOOM_MAX = 5;
+const DEFAULT_ZOOM = 3;
+const COLUMNS_BY_ZOOM = [8, 7, 6, 4, 3, 2];
+const WHEEL_ZOOM_STEP = 420;
+const PINCH_ZOOM_IN_SCALE = 1.8;
+const PINCH_ZOOM_OUT_SCALE = 0.55;
+const ZOOM_COOLDOWN_MS = 260;
+
 export function PhotosWindow() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
   const step = useScrollytellingStore((state) => state.step);
   const windowContentRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
+  const wheelZoomDeltaRef = useRef(0);
+  const currentZoomRef = useRef(DEFAULT_ZOOM);
+  const gestureStartZoomRef = useRef(DEFAULT_ZOOM);
+  const lastZoomChangeRef = useRef(0);
 
   const filtered = selectedProject
     ? ALL_PHOTOS.filter((p) => p.projectId === selectedProject)
     : ALL_PHOTOS;
 
   const currentProject = PROJECTS.find((p) => p.id === selectedProject);
+  const columnCount = COLUMNS_BY_ZOOM[zoomLevel];
+  currentZoomRef.current = zoomLevel;
+  const setClampedZoom = (nextZoom: number | ((current: number) => number)) => {
+    setZoomLevel((current) => {
+      const value = typeof nextZoom === 'function' ? nextZoom(current) : nextZoom;
+      return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, value));
+    });
+  };
+  const nudgeZoom = (direction: -1 | 1) => {
+    const now = Date.now();
+    if (now - lastZoomChangeRef.current < ZOOM_COOLDOWN_MS) return;
+
+    lastZoomChangeRef.current = now;
+    setClampedZoom((current) => current + direction);
+  };
 
   useEffect(() => {
     const progress = getStepPhotoScrollProgress(step);
@@ -66,6 +95,53 @@ export function PhotosWindow() {
       windowContent.removeEventListener('touchstart', stopPropagation);
       windowContent.removeEventListener('touchmove', stopPropagation);
       windowContent.removeEventListener('touchend', stopPropagation);
+    };
+  }, []);
+
+  useEffect(() => {
+    const gallery = galleryRef.current;
+    if (!gallery) return;
+
+    const handleWheelZoom = (event: WheelEvent) => {
+      if (!event.ctrlKey) return;
+
+      event.preventDefault();
+      wheelZoomDeltaRef.current -= event.deltaY;
+
+      if (Math.abs(wheelZoomDeltaRef.current) < WHEEL_ZOOM_STEP) return;
+
+      nudgeZoom(wheelZoomDeltaRef.current > 0 ? 1 : -1);
+      wheelZoomDeltaRef.current = 0;
+    };
+
+    const handleGestureStart = (event: Event) => {
+      event.preventDefault();
+      gestureStartZoomRef.current = currentZoomRef.current;
+    };
+
+    const handleGestureChange = (event: Event) => {
+      const gestureEvent = event as Event & { scale?: number };
+      const scale = gestureEvent.scale ?? 1;
+
+      event.preventDefault();
+
+      if (scale >= PINCH_ZOOM_IN_SCALE && currentZoomRef.current === gestureStartZoomRef.current) {
+        nudgeZoom(1);
+      }
+
+      if (scale <= PINCH_ZOOM_OUT_SCALE && currentZoomRef.current === gestureStartZoomRef.current) {
+        nudgeZoom(-1);
+      }
+    };
+
+    gallery.addEventListener('wheel', handleWheelZoom, { passive: false });
+    gallery.addEventListener('gesturestart', handleGestureStart, { passive: false });
+    gallery.addEventListener('gesturechange', handleGestureChange, { passive: false });
+
+    return () => {
+      gallery.removeEventListener('wheel', handleWheelZoom);
+      gallery.removeEventListener('gesturestart', handleGestureStart);
+      gallery.removeEventListener('gesturechange', handleGestureChange);
     };
   }, []);
 
@@ -131,20 +207,50 @@ export function PhotosWindow() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
           <div
-            className="h-[86px] px-7 shrink-0 flex items-center gap-2"
+            className="h-[86px] px-7 shrink-0 flex items-center gap-2 min-w-0"
             style={{ background: '#ffffff' }}
           >
-            <span className="text-[23px] font-bold" style={{ color: 'rgba(0,0,0,0.7)' }}>
+            <span className="text-[23px] font-bold truncate min-w-0" style={{ color: 'rgba(0,0,0,0.7)' }}>
               {currentProject ? currentProject.title : 'Bibliothèque'}
             </span>
-            <span className="text-[14px] ml-1" style={{ color: 'rgba(0,0,0,0.35)' }}>
+            <span className="text-[14px] ml-1 shrink-0" style={{ color: 'rgba(0,0,0,0.35)' }}>
               · {filtered.length} photo{filtered.length > 1 ? 's' : ''}
             </span>
             {currentProject && (
-              <span className="text-[11px] ml-auto" style={{ color: 'rgba(0,0,0,0.3)' }}>
+              <span className="text-[11px] ml-auto shrink-0" style={{ color: 'rgba(0,0,0,0.3)' }}>
                 {currentProject.location} · {currentProject.year}
               </span>
             )}
+            <div className="ml-auto flex shrink-0 items-center gap-2" style={{ color: 'rgba(0,0,0,0.52)' }}>
+              <button
+                type="button"
+                onClick={() => setClampedZoom((current) => current - 1)}
+                aria-label="Réduire la taille des photos"
+                className="grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-black/5 disabled:opacity-35"
+                disabled={zoomLevel === ZOOM_MIN}
+              >
+                <Minus size={16} strokeWidth={2.2} />
+              </button>
+              <input
+                aria-label="Taille des photos"
+                type="range"
+                min={ZOOM_MIN}
+                max={ZOOM_MAX}
+                step={1}
+                value={zoomLevel}
+                onChange={(event) => setClampedZoom(Number(event.target.value))}
+                className="h-1 w-[92px] accent-[#007aff]"
+              />
+              <button
+                type="button"
+                onClick={() => setClampedZoom((current) => current + 1)}
+                aria-label="Agrandir les photos"
+                className="grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-black/5 disabled:opacity-35"
+                disabled={zoomLevel === ZOOM_MAX}
+              >
+                <Plus size={16} strokeWidth={2.2} />
+              </button>
+            </div>
           </div>
 
           {/* Grid */}
@@ -156,7 +262,8 @@ export function PhotosWindow() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="columns-4 gap-2"
+                className="gap-2"
+                style={{ columnCount, columnGap: 8 }}
               >
                 {filtered.map((photo, idx) => (
                   <motion.button
