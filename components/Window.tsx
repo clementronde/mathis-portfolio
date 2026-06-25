@@ -22,6 +22,7 @@ interface WindowProps {
   defaultPosition?: { x: number; y: number };
   defaultSize?: { width: number; height: number };
   className?: string;
+  chrome?: 'default' | 'frameless';
 }
 
 const RESIZE_HANDLES = [
@@ -51,6 +52,7 @@ export function Window({
   defaultPosition,
   defaultSize = { width: 760, height: 520 },
   className = '',
+  chrome = 'default',
 }: WindowProps) {
   const { closeWindow, focusWindow, activeWindow } = useWindowStore();
   const isActive = activeWindow === id;
@@ -65,6 +67,7 @@ export function Window({
   const savedPos = useRef(initPos);
   const savedSize = useRef(defaultSize);
   const controls = useAnimationControls();
+  const isFrameless = chrome === 'frameless';
 
   // Centre la fenêtre après montage (window.innerHeight n'existe pas côté serveur)
   useLayoutEffect(() => {
@@ -221,12 +224,12 @@ export function Window({
         width: size.width,
         height: size.height,
         zIndex: isActive ? 50 : 40,
-        borderRadius: isMaximized ? 0 : 12,
+        borderRadius: isMaximized ? 0 : isFrameless ? 24 : 12,
         originX: 0.5,
         originY: 0.5,
       }}
       className={`flex flex-col overflow-hidden shadow-2xl ${
-        isActive ? 'ring-1 ring-white/10' : ''
+        isActive && !isFrameless ? 'ring-1 ring-white/10' : ''
       } ${className}`}
       onPointerDown={() => focusWindow(id)}
     >
@@ -235,9 +238,20 @@ export function Window({
         onPointerDown={handleTitleBarPointerDown}
         className="flex items-center gap-3 px-4 shrink-0 select-none"
         style={{
-          height: 44,
-          background: isActive ? 'rgba(42,42,42,0.97)' : 'rgba(30,30,30,0.97)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          height: isFrameless ? 70 : 44,
+          position: isFrameless ? 'absolute' : 'relative',
+          top: 0,
+          left: 0,
+          right: isFrameless ? undefined : 0,
+          zIndex: 3,
+          width: isFrameless ? 150 : undefined,
+          alignItems: isFrameless ? 'flex-start' : 'center',
+          paddingTop: isFrameless ? 25 : undefined,
+          paddingLeft: isFrameless ? 30 : undefined,
+          background: isFrameless
+            ? 'transparent'
+            : isActive ? 'rgba(42,42,42,0.97)' : 'rgba(30,30,30,0.97)',
+          borderBottom: isFrameless ? 'none' : '1px solid rgba(255,255,255,0.08)',
           cursor: isMaximized ? 'default' : 'grab',
         }}
       >
@@ -270,12 +284,16 @@ export function Window({
         </div>
 
         {/* Title */}
-        <div className="flex items-center gap-2 flex-1 justify-center pointer-events-none">
-          {icon && <span className="opacity-60 shrink-0">{icon}</span>}
-          <span className="text-[13px] font-medium text-white/75 truncate">{title}</span>
-        </div>
+        {!isFrameless && (
+          <>
+            <div className="flex items-center gap-2 flex-1 justify-center pointer-events-none">
+              {icon && <span className="opacity-60 shrink-0">{icon}</span>}
+              <span className="text-[13px] font-medium text-white/75 truncate">{title}</span>
+            </div>
 
-        <div className="w-14 shrink-0" />
+            <div className="w-14 shrink-0" />
+          </>
+        )}
       </div>
 
       {/* Content */}

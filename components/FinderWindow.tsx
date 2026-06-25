@@ -78,10 +78,10 @@ function getSectionProjects(section: FinderSection) {
 
 function getSidebarButtonStyle(active: boolean): React.CSSProperties {
   return {
-    marginLeft: 4,
-    marginRight: 4,
-    width: 'calc(100% - 8px)',
-    background: active ? 'rgba(0,0,0,0.06)' : 'transparent',
+    marginLeft: 22,
+    marginRight: 22,
+    width: 'calc(100% - 44px)',
+    background: active ? 'rgba(0,0,0,0.045)' : 'transparent',
     color: '#1d1d1f',
   };
 }
@@ -201,27 +201,35 @@ export function FinderWindow() {
       id="finder"
       title={title}
       icon={<AppIcon id="finder" size={16} />}
-      
+      chrome="frameless"
       defaultSize={{ width: 860, height: 580 }}
     >
       <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
 
         {/* ── Sidebar ── */}
         <div
-          className="w-44 shrink-0 flex flex-col py-3 overflow-y-auto"
-          style={{ background: '#f2f2f7', borderRight: '1px solid rgba(0,0,0,0.1)' }}
+          className="w-[210px] shrink-0 flex flex-col overflow-y-auto"
+          style={{
+            paddingTop: 100,
+            paddingBottom: 24,
+            background: '#fafafa',
+            borderTopLeftRadius: 24,
+            borderBottomLeftRadius: 24,
+            boxShadow: '22px 0 42px -34px rgba(0,0,0,0.72)',
+            zIndex: 2,
+          }}
         >
           <button
             onClick={() => openSection('recents')}
-            className="flex items-center gap-2 px-3 py-1.5 text-[13px] rounded-md text-left transition-colors"
+            className="flex items-center gap-3 px-0 py-2 text-[17px] font-medium rounded-lg text-left transition-colors"
             style={getSidebarButtonStyle(activeSection === 'recents' && !selectedProject)}
           >
-            <Clock size={15} />
+            <Clock size={22} strokeWidth={2} />
             <span>Récents</span>
           </button>
 
-          <div className="mt-4">
-            <p className="text-[10px] font-semibold px-3 mb-1" style={{ color: 'rgba(60,60,67,0.5)' }}>
+          <div className="mt-7">
+            <p className="text-[13px] font-semibold px-[28px] mb-4" style={{ color: 'rgba(60,60,67,0.68)' }}>
               Favoris
             </p>
             {SIDEBAR_ITEMS.map(({ id, label, icon: Icon }) => {
@@ -230,21 +238,23 @@ export function FinderWindow() {
                 <button
                   key={label}
                   onClick={() => openSection(id)}
-                  className="flex items-center gap-2 px-3 py-1.5 text-[13px] rounded-md text-left transition-colors"
+                  className="flex items-center gap-3 px-0 py-2 text-[17px] font-medium rounded-lg text-left transition-colors"
                   style={getSidebarButtonStyle(active)}
                 >
-                  <Icon size={15} />
+                  <Icon size={22} strokeWidth={2} />
                   <span>{label}</span>
                 </button>
               );
             })}
           </div>
 
-          <SidebarProjectList
-            projects={visibleProjects}
-            selectedProject={selectedProject}
-            onOpen={openProject}
-          />
+          <div className="hidden">
+            <SidebarProjectList
+              projects={visibleProjects}
+              selectedProject={selectedProject}
+              onOpen={openProject}
+            />
+          </div>
         </div>
 
         {/* ── Main content ── */}
@@ -252,41 +262,41 @@ export function FinderWindow() {
 
           {/* Toolbar */}
           <div
-            className="flex items-center gap-2 px-4 h-10 shrink-0"
-            style={{ borderBottom: '1px solid rgba(0,0,0,0.1)', background: '#f9f9f9' }}
+            className="flex items-center gap-5 px-7 h-[86px] shrink-0"
+            style={{ background: '#ffffff' }}
           >
             {selectedProject ? (
               <button
                 onClick={() => setSelectedProject(null)}
                 aria-label="Retour"
-                className="h-8 w-10 flex items-center justify-center rounded-l-full transition-colors"
+                className="h-[50px] w-[42px] flex items-center justify-center rounded-l-full transition-colors"
                 style={{
                   color: 'rgba(0,0,0,0.65)',
                   background: 'rgba(255,255,255,0.82)',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                  boxShadow: '0 10px 26px rgba(0,0,0,0.08)',
                 }}
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={30} strokeWidth={2.6} />
               </button>
             ) : (
-              <span className="text-[13px] font-semibold" style={{ color: '#1d1d1f' }}>{title}</span>
+              <span className="text-[23px] font-bold" style={{ color: 'rgba(0,0,0,0.7)' }}>{title}</span>
             )}
 
             {selectedProject && (
               <>
                 <button
                   aria-label="Suivant"
-                  className="h-8 w-10 -ml-2 flex items-center justify-center rounded-r-full transition-colors"
+                  className="h-[50px] w-[42px] -ml-5 flex items-center justify-center rounded-r-full transition-colors"
                   style={{
                     color: 'rgba(0,0,0,0.65)',
                     background: 'rgba(255,255,255,0.82)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                    boxShadow: '0 10px 26px rgba(0,0,0,0.08)',
                     borderLeft: '1px solid rgba(0,0,0,0.06)',
                   }}
                 >
-                  <ChevronRight size={20} />
+                  <ChevronRight size={30} strokeWidth={2.6} />
                 </button>
-                <span className="text-[15px] font-semibold truncate ml-4" style={{ color: 'rgba(0,0,0,0.72)' }}>
+                <span className="text-[23px] font-bold truncate ml-1" style={{ color: 'rgba(0,0,0,0.7)' }}>
                   {selectedProject.title}
                 </span>
               </>
@@ -367,15 +377,41 @@ export function FinderWindow() {
                 </motion.div>
 
               ) : (
-                /* Folder grid view */
+                /* Folder list view */
                 <motion.div
                   key={activeSection}
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
-                  className="h-full grid content-start gap-x-8 gap-y-6 p-8"
-                  style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(116px, 1fr))' }}
+                  className="h-full flex"
                 >
-                  <ProjectFolderGrid projects={visibleProjects} onOpen={openProject} />
+                  <div className="w-[285px] shrink-0 px-7 pt-6">
+                    {visibleProjects.map((project, index) => (
+                      <button
+                        key={project.id}
+                        onClick={() => openProject(project)}
+                        className="w-full h-[42px] px-2 flex items-center gap-3 rounded-md text-left transition-colors"
+                        style={{ background: index === 0 ? 'rgba(0,0,0,0.06)' : 'transparent' }}
+                      >
+                        <FolderIcon size={27} />
+                        <span className="text-[17px] font-semibold truncate">{project.title}</span>
+                        <ChevronRight size={22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
+                      </button>
+                    ))}
+                  </div>
+                  <div className="w-px h-full" style={{ background: 'rgba(0,0,0,0.08)' }} />
+                  <div className="flex-1 flex items-center justify-center px-10 pb-12">
+                    {visibleProjects[0] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={encodeSrc(visibleProjects[0].coverImage)}
+                        alt=""
+                        className="max-w-[58%] max-h-[62%] object-contain"
+                        draggable={false}
+                      />
+                    ) : (
+                      <ProjectFolderGrid projects={visibleProjects} onOpen={openProject} />
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

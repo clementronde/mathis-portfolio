@@ -35,14 +35,20 @@ export function MusicWindow() {
       id="music"
       title="Musique"
       icon={<AppIcon id="music" size={16} />}
-      
+      chrome="frameless"
       defaultSize={{ width: 580, height: 480 }}
     >
       <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
         {/* Left — now playing */}
         <div
           className="w-52 shrink-0 flex flex-col items-center justify-center p-6 gap-4"
-          style={{ borderRight: '1px solid rgba(0,0,0,0.1)', background: '#f9f9f9' }}
+          style={{
+            background: '#fbfbfb',
+            borderTopLeftRadius: 24,
+            borderBottomLeftRadius: 24,
+            boxShadow: '22px 0 42px -34px rgba(0,0,0,0.72)',
+            zIndex: 2,
+          }}
         >
           {/* Album art */}
           <div
@@ -105,8 +111,8 @@ export function MusicWindow() {
 
         {/* Right — playlist */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-4 py-3 shrink-0" style={{ borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-            <p className="text-[11px] uppercase tracking-wider" style={{ color: 'rgba(0,0,0,0.35)' }}>Ma playlist</p>
+          <div className="h-[72px] px-5 shrink-0 flex items-center" style={{ background: '#ffffff' }}>
+            <p className="text-[18px] font-semibold" style={{ color: 'rgba(0,0,0,0.7)' }}>Ma playlist</p>
           </div>
           <div className="flex-1 overflow-y-auto py-1">
             {PLAYLIST.map((track, idx) => (

@@ -69,10 +69,11 @@ export function CreativeAppWindow({ id }: Props) {
       id={id as AppId}
       title={data.title}
       icon={<AppIcon id={id as AppId} size={16} />}
+      chrome="frameless"
       defaultSize={{ width: 500, height: 420 }}
     >
       <div
-        className="flex flex-col h-full p-6 overflow-y-auto"
+        className="flex flex-col h-full px-6 pb-6 pt-[86px] overflow-y-auto"
         style={{ background: '#ffffff', color: '#1d1d1f' }}
       >
         {/* Header */}

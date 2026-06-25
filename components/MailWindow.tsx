@@ -24,14 +24,14 @@ export function MailWindow() {
       id="mail"
       title="Nouveau message"
       icon={<AppIcon id="mail" size={16} />}
-      
+      chrome="frameless"
       defaultSize={{ width: 640, height: 480 }}
     >
       <div className="flex flex-col h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
         {/* Mail toolbar */}
         <div
-          className="flex items-center gap-2 px-4 h-10 shrink-0"
-          style={{ borderBottom: '1px solid rgba(0,0,0,0.1)', background: '#f9f9f9' }}
+          className="flex items-center gap-2 pl-[150px] pr-5 h-[72px] shrink-0"
+          style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', background: '#ffffff' }}
         >
           <span className="text-[12px]" style={{ color: 'rgba(0,0,0,0.35)' }}>Brouillon enregistré</span>
           <div className="ml-auto flex items-center gap-3">

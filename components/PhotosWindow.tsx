@@ -6,7 +6,7 @@ import { AppIcon } from './icons/AppIcons';
 import { Lightbox } from './Lightbox';
 import { PROJECTS } from '@/data/projects';
 import { encodeSrc } from '@/utils/path';
-import { ImageIcon } from 'lucide-react';
+import { Folder, ImageIcon } from 'lucide-react';
 import { useScrollytellingStore, getStepPhotoScrollProgress } from '@/store/useScrollytellingStore';
 
 // Flatten all project images into a single list, tagged by project id
@@ -52,54 +52,54 @@ export function PhotosWindow() {
       id="photos"
       title="Photos"
       icon={<AppIcon id="photos" size={16} />}
-      
+      chrome="frameless"
       defaultSize={{ width: 860, height: 580 }}
     >
       <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
         {/* Sidebar */}
         <div
-          className="w-48 shrink-0 flex flex-col overflow-y-auto py-3"
-          style={{ borderRight: '1px solid rgba(0,0,0,0.1)', background: '#f2f2f7' }}
+          className="w-[210px] shrink-0 flex flex-col overflow-y-auto"
+          style={{
+            paddingTop: 100,
+            paddingBottom: 24,
+            background: '#fbfbfb',
+            borderTopLeftRadius: 24,
+            borderBottomLeftRadius: 24,
+            boxShadow: '22px 0 42px -34px rgba(0,0,0,0.72)',
+            zIndex: 2,
+          }}
         >
           {/* Library */}
           <button
             onClick={() => setSelectedProject(null)}
-            className="flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] transition-colors"
+            className="flex items-center gap-3 px-0 py-2 mx-[22px] rounded-lg text-[17px] font-medium transition-colors"
             style={{
-              background: !selectedProject ? 'rgba(0,122,255,0.15)' : 'transparent',
-              color: !selectedProject ? '#007AFF' : 'rgba(60,60,67,0.7)',
+              background: !selectedProject ? 'rgba(0,0,0,0.045)' : 'transparent',
+              color: '#1d1d1f',
             }}
           >
-            <ImageIcon size={14} className="shrink-0" />
-            <span className="font-medium">Bibliothèque</span>
+            <ImageIcon size={22} className="shrink-0" strokeWidth={2} />
+            <span>Bibliothèque</span>
           </button>
-          <div className="mx-3 mt-1 mb-1 text-[10px]" style={{ color: 'rgba(60,60,67,0.4)' }}>{ALL_PHOTOS.length} photos</div>
+          <div className="mx-[22px] mt-1 mb-1 text-[12px]" style={{ color: 'rgba(60,60,67,0.45)' }}>{ALL_PHOTOS.length} photos</div>
 
           {/* Albums */}
-          <div className="mt-3 mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(60,60,67,0.4)' }}>
+          <div className="mt-6 mb-4 px-[28px] text-[13px] font-semibold" style={{ color: 'rgba(60,60,67,0.68)' }}>
             Albums
           </div>
           {PROJECTS.map((proj) => (
             <button
               key={proj.id}
               onClick={() => setSelectedProject(proj.id)}
-              className="flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] transition-colors text-left"
+              className="flex items-center gap-3 px-0 py-2 mx-[22px] rounded-lg text-[15px] font-medium transition-colors text-left"
               style={{
-                background: selectedProject === proj.id ? 'rgba(0,122,255,0.15)' : 'transparent',
-                color: selectedProject === proj.id ? '#007AFF' : 'rgba(60,60,67,0.7)',
+                background: selectedProject === proj.id ? 'rgba(0,0,0,0.045)' : 'transparent',
+                color: '#1d1d1f',
               }}
             >
-              <div
-                className="w-4 h-4 rounded-sm shrink-0"
-                style={{
-                  backgroundImage: `url("${encodeSrc(proj.coverImage)}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  background: proj.color,
-                }}
-              />
+              <Folder size={21} className="shrink-0" strokeWidth={2} />
               <span className="truncate">{proj.title}</span>
-              <span className="ml-auto text-[10px] shrink-0" style={{ color: 'rgba(60,60,67,0.35)' }}>{proj.images.length}</span>
+              <span className="ml-auto text-[12px] shrink-0" style={{ color: 'rgba(60,60,67,0.42)' }}>{proj.images.length}</span>
             </button>
           ))}
         </div>
@@ -108,13 +108,13 @@ export function PhotosWindow() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
           <div
-            className="px-4 py-2.5 shrink-0 flex items-center gap-2"
-            style={{ borderBottom: '1px solid rgba(0,0,0,0.1)', background: '#f9f9f9' }}
+            className="h-[86px] px-7 shrink-0 flex items-center gap-2"
+            style={{ background: '#ffffff' }}
           >
-            <span className="text-[15px] font-semibold" style={{ color: '#1d1d1f' }}>
+            <span className="text-[23px] font-bold" style={{ color: 'rgba(0,0,0,0.7)' }}>
               {currentProject ? currentProject.title : 'Bibliothèque'}
             </span>
-            <span className="text-[12px] ml-1" style={{ color: 'rgba(0,0,0,0.35)' }}>
+            <span className="text-[14px] ml-1" style={{ color: 'rgba(0,0,0,0.35)' }}>
               · {filtered.length} photo{filtered.length > 1 ? 's' : ''}
             </span>
             {currentProject && (
@@ -125,7 +125,7 @@ export function PhotosWindow() {
           </div>
 
           {/* Grid */}
-          <div ref={galleryRef} className="flex-1 overflow-y-auto p-3">
+          <div ref={galleryRef} className="flex-1 overflow-y-auto px-5 pb-5">
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedProject ?? 'all'}
