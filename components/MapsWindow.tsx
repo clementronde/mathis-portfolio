@@ -359,15 +359,22 @@ export function MapsWindow() {
               )}
 
               <div
-                className="relative max-w-full max-h-full"
+                className="relative w-full h-full flex items-center justify-center"
                 onClick={(event) => event.stopPropagation()}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={encodeSrc(lightboxLocation.photos[lightbox.index].src)}
                   alt={lightboxLocation.photos[lightbox.index].projectTitle}
-                  className="block max-w-full max-h-[76vh] rounded-md"
-                  style={{ boxShadow: '0 24px 80px rgba(0,0,0,0.58)' }}
+                  className="block rounded-md"
+                  style={{
+                    maxWidth: 'min(82vw, 680px)',
+                    maxHeight: 'min(76vh, 440px)',
+                    width: 'auto',
+                    height: 'auto',
+                    objectFit: 'contain',
+                    boxShadow: '0 24px 80px rgba(0,0,0,0.58)',
+                  }}
                 />
                 <div
                   className="absolute left-1/2 bottom-3 -translate-x-1/2 rounded-full px-3 py-1 text-[11px]"
