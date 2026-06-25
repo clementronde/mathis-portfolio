@@ -310,7 +310,7 @@ export function MapsWindow() {
                     aria-label={`${photo.projectTitle} - ${photo.locationLabel}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={encodeSrc(photo.src)} alt={photo.projectTitle} className="w-full h-full object-cover" />
+                    <img src={encodeSrc(photo.src)} alt={photo.projectTitle} className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>

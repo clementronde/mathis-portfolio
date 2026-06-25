@@ -64,7 +64,7 @@ export function NotesWindow() {
               <button
                 key={f}
                 onClick={() => selectFilter(f)}
-                className="flex-1 py-1 text-[11px] rounded-md transition-colors"
+                className="flex-1 py-1 text-[10px] rounded-md transition-colors"
                 style={{
                   background: filter === f ? 'rgba(255,204,0,0.25)' : 'transparent',
                   color: filter === f ? '#b8860b' : 'rgba(60,60,67,0.55)',
@@ -80,7 +80,7 @@ export function NotesWindow() {
               <button
                 key={folder.label}
                 onClick={() => selectFilter(index < 3 ? 'pro' : 'perso')}
-                className="w-full h-10 flex items-center gap-3 text-left text-[16px] font-medium"
+                className="w-full h-10 flex items-center gap-3 text-left text-[14px] font-medium"
               >
                 <FileText size={21} strokeWidth={1.6} />
                 <span className="min-w-0 flex-1 truncate">{folder.label}</span>
@@ -93,7 +93,7 @@ export function NotesWindow() {
         {/* Note list */}
         <div className="w-[230px] shrink-0 flex flex-col overflow-hidden" style={{ background: '#ffffff' }}>
           <div
-            className="h-[72px] shrink-0 flex items-center px-7 text-[20px] font-bold"
+            className="h-[72px] shrink-0 flex items-center px-7 text-[18px] font-bold"
             style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.7)' }}
           >
             Notes
@@ -109,8 +109,8 @@ export function NotesWindow() {
                   background: selected.id === note.id ? '#FFC400' : 'transparent',
                 }}
               >
-                <p className="text-[15px] font-medium truncate" style={{ color: '#000000' }}>{note.title}</p>
-                <p className="text-[14px] mt-1 truncate" style={{ color: selected.id === note.id ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.42)' }}>{note.date}</p>
+                <p className="text-[13px] font-medium truncate" style={{ color: '#000000' }}>{note.title}</p>
+                <p className="text-[12px] mt-1 truncate" style={{ color: selected.id === note.id ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.42)' }}>{note.date}</p>
               </button>
             ))}
           </div>
@@ -132,11 +132,11 @@ export function NotesWindow() {
             >
               {/* Header */}
               <div className="mb-5">
-                <h2 className="text-[22px] font-semibold leading-tight" style={{ color: '#000000' }}>{selected.title}</h2>
+                <h2 className="text-[19px] font-semibold leading-tight" style={{ color: '#000000' }}>{selected.title}</h2>
               </div>
 
               {/* Body */}
-              <div className="text-[16px] leading-9 whitespace-pre-line" style={{ color: 'rgba(0,0,0,0.62)' }}>
+              <div className="text-[14px] leading-8 whitespace-pre-line" style={{ color: 'rgba(0,0,0,0.62)' }}>
                 {selected.content}
               </div>
             </motion.div>

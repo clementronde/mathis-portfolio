@@ -104,11 +104,11 @@ function ProjectFolderGrid({
           className="flex flex-col items-center gap-1.5 group outline-none"
         >
           <FolderIcon coverImage={p.coverImage} color={p.color} size={80} />
-          <span className="text-[11px] text-center leading-tight max-w-[90px] truncate transition-colors"
+          <span className="text-[10px] text-center leading-tight max-w-[90px] truncate transition-colors"
             style={{ color: 'rgba(0,0,0,0.6)' }}>
             {p.title}
           </span>
-          <span className="text-[9px]" style={{ color: 'rgba(0,0,0,0.3)' }}>{p.images.length} photos</span>
+          <span className="text-[8px]" style={{ color: 'rgba(0,0,0,0.3)' }}>{p.images.length} photos</span>
         </motion.button>
       ))}
     </>
@@ -126,14 +126,14 @@ function SidebarProjectList({
 }) {
   return (
     <div className="mt-1">
-      <p className="text-[10px] font-semibold uppercase tracking-wider px-3 mb-1" style={{ color: 'rgba(60,60,67,0.4)' }}>
+      <p className="text-[9px] font-semibold uppercase tracking-wider px-3 mb-1" style={{ color: 'rgba(60,60,67,0.4)' }}>
         Projets
       </p>
       {projects.map((p) => (
         <button
           key={p.id}
           onClick={() => onOpen(p)}
-          className="flex items-center gap-2 w-full px-3 py-1 text-[12px] rounded-md text-left transition-colors truncate"
+          className="flex items-center gap-2 w-full px-3 py-1 text-[11px] rounded-md text-left transition-colors truncate"
           style={getSidebarButtonStyle(selectedProject?.id === p.id)}
         >
           <div
@@ -221,7 +221,7 @@ export function FinderWindow() {
         >
           <button
             onClick={() => openSection('recents')}
-            className="flex items-center gap-3 px-0 py-2 text-[17px] font-medium rounded-lg text-left transition-colors"
+            className="flex items-center gap-3 px-0 py-2 text-[15px] font-medium rounded-lg text-left transition-colors"
             style={getSidebarButtonStyle(activeSection === 'recents' && !selectedProject)}
           >
             <Clock size={22} strokeWidth={2} />
@@ -229,7 +229,7 @@ export function FinderWindow() {
           </button>
 
           <div className="mt-7">
-            <p className="text-[13px] font-semibold px-[28px] mb-4" style={{ color: 'rgba(60,60,67,0.68)' }}>
+            <p className="text-[12px] font-semibold px-[28px] mb-4" style={{ color: 'rgba(60,60,67,0.68)' }}>
               Favoris
             </p>
             {SIDEBAR_ITEMS.map(({ id, label, icon: Icon }) => {
@@ -238,7 +238,7 @@ export function FinderWindow() {
                 <button
                   key={label}
                   onClick={() => openSection(id)}
-                  className="flex items-center gap-3 px-0 py-2 text-[17px] font-medium rounded-lg text-left transition-colors"
+                  className="flex items-center gap-3 px-0 py-2 text-[15px] font-medium rounded-lg text-left transition-colors"
                   style={getSidebarButtonStyle(active)}
                 >
                   <Icon size={22} strokeWidth={2} />
@@ -279,7 +279,7 @@ export function FinderWindow() {
                 <ChevronLeft size={30} strokeWidth={2.6} />
               </button>
             ) : (
-              <span className="text-[23px] font-bold" style={{ color: 'rgba(0,0,0,0.7)' }}>{title}</span>
+              <span className="text-[20px] font-bold" style={{ color: 'rgba(0,0,0,0.7)' }}>{title}</span>
             )}
 
             {selectedProject && (
@@ -296,7 +296,7 @@ export function FinderWindow() {
                 >
                   <ChevronRight size={30} strokeWidth={2.6} />
                 </button>
-                <span className="text-[23px] font-bold truncate ml-1" style={{ color: 'rgba(0,0,0,0.7)' }}>
+                <span className="text-[20px] font-bold truncate ml-1" style={{ color: 'rgba(0,0,0,0.7)' }}>
                   {selectedProject.title}
                 </span>
               </>
@@ -393,7 +393,7 @@ export function FinderWindow() {
                         style={{ background: index === 0 ? 'rgba(0,0,0,0.06)' : 'transparent' }}
                       >
                         <FolderIcon size={27} />
-                        <span className="text-[17px] font-semibold truncate">{project.title}</span>
+                        <span className="text-[15px] font-semibold truncate">{project.title}</span>
                         <ChevronRight size={22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
                       </button>
                     ))}

@@ -243,7 +243,7 @@ export function Desktop() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/MSA.png"
+          src="/images/MSA.svg"
           alt="MSA"
           className="block h-[58px] w-auto"
           draggable={false}

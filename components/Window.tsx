@@ -89,19 +89,18 @@ export function Window({
     });
   }, [controls]);
 
-  // ── Drag via title bar ────────────────────────────────────────────────────
-  function handleTitleBarPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+  // ── Drag via top chrome area ─────────────────────────────────────────────
+  function startWindowDrag(clientX: number, clientY: number) {
     if (isMaximized) return;
-    if ((e.target as HTMLElement).closest('button')) return;
-    e.preventDefault();
+
     focusWindow(id);
 
-    const startX = e.clientX - x.get();
-    const startY = e.clientY - y.get();
+    const startX = clientX - x.get();
+    const startY = clientY - y.get();
 
     const onMove = (me: PointerEvent) => {
       x.set(me.clientX - startX);
-      y.set(Math.max(28, me.clientY - startY));
+      y.set(me.clientY - startY);
     };
     const onUp = () => {
       document.removeEventListener('pointermove', onMove);
@@ -109,6 +108,26 @@ export function Window({
     };
     document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', onUp);
+  }
+
+  function handleWindowPointerDownCapture(e: React.PointerEvent<HTMLDivElement>) {
+    if (isMaximized || e.button !== 0) return;
+
+    const target = e.target as HTMLElement;
+    if (
+      target.closest(
+        'button, a, input, textarea, select, [role="button"], [data-no-window-drag]'
+      )
+    ) {
+      return;
+    }
+
+    const bounds = e.currentTarget.getBoundingClientRect();
+    const draggableHeight = isFrameless ? 72 : 44;
+    if (e.clientY - bounds.top > draggableHeight) return;
+
+    e.preventDefault();
+    startWindowDrag(e.clientX, e.clientY);
   }
 
   // ── Resize ────────────────────────────────────────────────────────────────
@@ -144,7 +163,7 @@ export function Window({
         }
 
         x.set(nx);
-        y.set(Math.max(28, ny));
+        y.set(ny);
         setSize({ width: nw, height: nh });
       };
       const onUp = () => {
@@ -231,11 +250,11 @@ export function Window({
       className={`flex flex-col overflow-hidden shadow-2xl ${
         isActive && !isFrameless ? 'ring-1 ring-white/10' : ''
       } ${className}`}
+      onPointerDownCapture={handleWindowPointerDownCapture}
       onPointerDown={() => focusWindow(id)}
     >
       {/* Title bar */}
       <div
-        onPointerDown={handleTitleBarPointerDown}
         className="flex items-center gap-3 px-4 shrink-0 select-none"
         style={{
           height: isFrameless ? 70 : 44,

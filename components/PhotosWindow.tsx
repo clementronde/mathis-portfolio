@@ -20,8 +20,8 @@ export function PhotosWindow() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const step = useScrollytellingStore((state) => state.step);
+  const windowContentRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const filtered = selectedProject
     ? ALL_PHOTOS.filter((p) => p.projectId === selectedProject)
@@ -49,19 +49,23 @@ export function PhotosWindow() {
   }, [step]);
 
   useEffect(() => {
-    const sidebar = sidebarRef.current;
-    if (!sidebar) return;
+    const windowContent = windowContentRef.current;
+    if (!windowContent) return;
 
     const stopPropagation = (event: Event) => {
       event.stopPropagation();
     };
 
-    sidebar.addEventListener('wheel', stopPropagation);
-    sidebar.addEventListener('touchmove', stopPropagation);
+    windowContent.addEventListener('wheel', stopPropagation);
+    windowContent.addEventListener('touchstart', stopPropagation);
+    windowContent.addEventListener('touchmove', stopPropagation);
+    windowContent.addEventListener('touchend', stopPropagation);
 
     return () => {
-      sidebar.removeEventListener('wheel', stopPropagation);
-      sidebar.removeEventListener('touchmove', stopPropagation);
+      windowContent.removeEventListener('wheel', stopPropagation);
+      windowContent.removeEventListener('touchstart', stopPropagation);
+      windowContent.removeEventListener('touchmove', stopPropagation);
+      windowContent.removeEventListener('touchend', stopPropagation);
     };
   }, []);
 
@@ -73,10 +77,9 @@ export function PhotosWindow() {
       chrome="frameless"
       defaultSize={{ width: 860, height: 580 }}
     >
-      <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
+      <div ref={windowContentRef} className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
         {/* Sidebar */}
         <div
-          ref={sidebarRef}
           className="w-[210px] shrink-0 flex flex-col overflow-y-auto"
           style={{
             paddingTop: 100,
