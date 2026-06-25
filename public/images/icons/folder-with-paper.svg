@@ -1,0 +1,36 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="folderBack" x1="512" y1="134" x2="512" y2="888" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#66C8F0"/>
+      <stop offset="1" stop-color="#39A7DC"/>
+    </linearGradient>
+    <linearGradient id="folderFront" x1="512" y1="270" x2="512" y2="890" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#73D1F4"/>
+      <stop offset="1" stop-color="#43AFE0"/>
+    </linearGradient>
+    <filter id="innerShadow" x="42" y="134" width="940" height="755" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="-8"/>
+      <feGaussianBlur stdDeviation="10"/>
+      <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.07 0 0 0 0 0.42 0 0 0 0 0.65 0 0 0 0.22 0"/>
+      <feBlend mode="normal" in2="shape" result="effect1_innerShadow"/>
+    </filter>
+  </defs>
+
+  <path
+    d="M42 200C42 164 72 134 109 134H310C336 134 361 145 378 165L402 192C421 215 450 228 480 228H916C953 228 982 258 982 295V778C982 839 932 889 871 889H153C92 889 42 839 42 778V200Z"
+    fill="url(#folderBack)"
+    filter="url(#innerShadow)"
+  />
+  <path
+    d="M73 264C73 246 88 232 106 232H918C936 232 951 246 951 264V385H73V264Z"
+    fill="white"
+  />
+  <path
+    d="M42 335C42 299 72 269 109 269H916C953 269 982 299 982 335V778C982 839 932 889 871 889H153C92 889 42 839 42 778V335Z"
+    fill="url(#folderFront)"
+  />
+</svg>

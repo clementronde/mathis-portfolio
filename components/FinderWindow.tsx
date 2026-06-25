@@ -9,12 +9,12 @@ import { useWindowStore } from '@/store/useWindowStore';
 import { AppIcon } from './icons/AppIcons';
 import { encodeSrc } from '@/utils/path';
 
-/* ─── Mac-style folder icon using dossiericon.png ───────────────── */
+/* ─── Mac-style folder icon ───────────────── */
 function FolderIcon({ size = 72 }: { coverImage?: string; color?: string; size?: number }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/images/icons/dossiericon.png"
+      src="/images/icons/folder-with-paper.svg"
       alt=""
       width={size}
       height={size}
@@ -389,10 +389,10 @@ export function FinderWindow() {
                       <button
                         key={project.id}
                         onClick={() => openProject(project)}
-                        className="w-full h-[42px] px-2 flex items-center gap-3 rounded-md text-left transition-colors"
+                        className="w-full h-[54px] px-2 flex items-center gap-3 rounded-md text-left transition-colors"
                         style={{ background: index === 0 ? 'rgba(0,0,0,0.06)' : 'transparent' }}
                       >
-                        <FolderIcon size={27} />
+                        <FolderIcon coverImage={project.coverImage} color={project.color} size={34} />
                         <span className="text-[15px] font-semibold truncate">{project.title}</span>
                         <ChevronRight size={22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
                       </button>
