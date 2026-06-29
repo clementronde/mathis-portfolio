@@ -358,6 +358,7 @@ export function Window({
       {/* Content — stoppe la propagation touch pour éviter le déclenchement du scrollytelling */}
       <div
         className="flex-1 overflow-hidden"
+        data-window-interactive="true"
         style={{ background: 'rgba(22,22,22,0.98)' }}
         onTouchStart={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}

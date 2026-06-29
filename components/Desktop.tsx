@@ -19,6 +19,7 @@ import { PhotosWindow } from './PhotosWindow';
 import { MapsWindow } from './MapsWindow';
 import { MusicWindow } from './MusicWindow';
 import { LockScreen } from './LockScreen';
+import { Lightbox } from './Lightbox';
 import type { AppId } from '@/store/useWindowStore';
 
 // Desktop collage — 5 real projects
@@ -26,14 +27,14 @@ const DESKTOP_ITEMS = [
   {
     id: 'course-adidas-item',
     label: 'Course Adidas',
-    imageSrc: undefined,
+    imageSrc: '/images/desktop/my-first-10k-v0-v8kel475syzc1 1.png',
     imageColor: '#d9f0dc',
     rotate: 0,
     style: { left: '8.5%', top: '15%' },
     width: 285,
-    aspectRatio: '16/10',
-    type: 'map' as const,
-    action: { type: 'finder', folder: 'hrc-berck' },
+    aspectRatio: '413/272',
+    type: 'photo' as const,
+    action: { type: 'lightbox' },
   },
   {
     id: 'rats-item',
@@ -62,26 +63,26 @@ const DESKTOP_ITEMS = [
   {
     id: 'couscous-item',
     label: 'Couscous',
-    imageSrc: '/images/projects/23-01 Maroc/DSC_0153.avif',
+    imageSrc: '/images/desktop/Couscous.png',
     imageColor: '#2e1a00',
     rotate: 0,
     style: { right: '7%', top: '22%' },
     width: 155,
-    aspectRatio: '3/4',
+    aspectRatio: '1/2',
     type: 'photo' as const,
-    action: { type: 'finder', folder: 'maroc-2023' },
+    action: { type: 'lightbox' },
   },
   {
     id: 'album-moment-item',
     label: 'Album du moment',
-    imageSrc: '/images/projects/25-10-17 HEAVEN_ALTERANTS/V3 (1).avif',
+    imageSrc: '/images/desktop/Album du moment.png',
     imageColor: '#1a0a2e',
     rotate: 0,
     style: { right: '12%', bottom: '16%' },
     width: 250,
-    aspectRatio: '4/3',
+    aspectRatio: '1/1',
     type: 'photo' as const,
-    action: { type: 'finder', folder: 'heaven-alterants' },
+    action: { type: 'lightbox' },
   },
 ] as const;
 
@@ -112,6 +113,7 @@ export function Desktop() {
   const scrollCooldown = useRef(false);
   const [locked, setLocked] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [desktopLightboxImage, setDesktopLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -147,7 +149,11 @@ export function Desktop() {
 
   // Wheel / touch scroll → advance/retreat step
   useEffect(() => {
+    const isInsideInteractiveWindow = (target: EventTarget | null) =>
+      target instanceof Element && target.closest('[data-window-interactive="true"]') !== null;
+
     const handleWheel = (e: WheelEvent) => {
+      if (isInsideInteractiveWindow(e.target)) return;
       if (scrollCooldown.current) return;
       scrollCooldown.current = true;
       setTimeout(() => { scrollCooldown.current = false; }, 900);
@@ -156,8 +162,13 @@ export function Desktop() {
     };
 
     let touchStartY = 0;
-    const handleTouchStart = (e: TouchEvent) => { touchStartY = e.touches[0].clientY; };
+    let touchStartedInsideWindow = false;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartedInsideWindow = isInsideInteractiveWindow(e.target);
+      touchStartY = e.touches[0].clientY;
+    };
     const handleTouchEnd = (e: TouchEvent) => {
+      if (touchStartedInsideWindow || isInsideInteractiveWindow(e.target)) return;
       const delta = touchStartY - e.changedTouches[0].clientY;
       if (Math.abs(delta) < 50 || scrollCooldown.current) return;
       scrollCooldown.current = true;
@@ -252,12 +263,28 @@ export function Desktop() {
               });
             }}
             onClick={() => {
+              if (item.action.type === 'lightbox' && item.imageSrc) {
+                setDesktopLightboxImage(item.imageSrc);
+                return;
+              }
+
               const folder = (item.action as { type: string; folder?: string }).folder;
               openWindow('finder', folder);
             }}
           />
         ))}
       </div>
+
+      {desktopLightboxImage && (
+        <Lightbox
+          images={[desktopLightboxImage]}
+          colors={['#111111']}
+          current={0}
+          onClose={() => setDesktopLightboxImage(null)}
+          onPrev={() => undefined}
+          onNext={() => undefined}
+        />
+      )}
 
       {/* Windows — desktop + mobile (Window adapte sa taille via responsiveSize) */}
       <div className="absolute inset-0 z-[20] pointer-events-none">
@@ -279,7 +306,7 @@ export function Desktop() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.4 }}
-            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[80] hidden md:flex flex-col items-center gap-1.5 pointer-events-none select-none"
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[80] hidden md:flex flex-col items-center gap-1.5 pointer-events-none select-none"
           >
             <span className="text-white/50 text-[11px] tracking-widest uppercase">Défiler pour explorer</span>
             <motion.div
@@ -292,7 +319,7 @@ export function Desktop() {
         )}
       </AnimatePresence>
 
-      {/* ── Step progress dots — côté gauche (dock est à droite) ── */}
+      {/* ── Step progress dots ── */}
       <div className="fixed left-4 top-1/2 -translate-y-1/2 z-[80] hidden md:flex flex-col gap-2 pointer-events-none select-none">
         {SCROLL_STEPS.map((_, i) => (
           <div

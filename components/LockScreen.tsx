@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronUp } from 'lucide-react';
 
 interface LockScreenProps {
   onUnlock: () => void;
@@ -29,7 +28,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
       key="lockscreen"
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center cursor-pointer select-none overflow-hidden"
       style={{
-        backgroundImage: `url('/images/wallpaper.jpg')`,
+        backgroundImage: `url('/images/desktop/wallpaperverouillage.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
@@ -40,19 +39,17 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
         transition: { duration: 0.65, ease: [0.32, 0, 0.67, 0] },
       }}
     >
-      {/* Frosted overlay */}
+      {/* Legibility overlay */}
       <div
         className="absolute inset-0"
         style={{
-          backdropFilter: 'blur(28px) saturate(1.4)',
-          WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
-          background: 'rgba(0,0,0,0.18)',
+          background: 'linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.02) 46%, rgba(0,0,0,0.36) 100%)',
         }}
       />
 
       {/* Clock + date */}
       <motion.div
-        className="relative z-10 flex flex-col items-center text-white"
+        className="absolute top-16 sm:top-20 z-10 flex flex-col items-center text-white"
         initial={{ opacity: 0, y: 32 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -78,20 +75,30 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
         </div>
       </motion.div>
 
-      {/* Unlock hint */}
+      {/* Profile */}
       <motion.div
-        className="absolute bottom-10 sm:bottom-14 flex flex-col items-center gap-1.5 text-white/50 pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.9, duration: 0.6 }}
+        className="absolute bottom-14 sm:bottom-20 z-10 flex flex-col items-center text-white"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
       >
-        <motion.div
-          animate={{ y: [0, -6, 0] }}
-          transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/desktop/Ellipsemathis.png"
+          alt=""
+          className="h-[86px] w-[86px] sm:h-[112px] sm:w-[112px] rounded-full"
+          style={{
+            boxShadow: '0 18px 48px rgba(0,0,0,0.36)',
+          }}
+          draggable={false}
+        />
+        <span
+          className="mt-5 text-[19px] sm:text-[24px] font-semibold"
+          style={{ textShadow: '0 2px 18px rgba(0,0,0,0.45)' }}
         >
-          <ChevronUp size={20} />
-        </motion.div>
-        <span className="text-[11px] sm:text-[12px] tracking-[0.18em] uppercase font-medium">
+          mathis straebler
+        </span>
+        <span className="mt-2 text-[12px] sm:text-[13px] tracking-[0.16em] uppercase font-medium text-white/70">
           Cliquer pour entrer
         </span>
       </motion.div>

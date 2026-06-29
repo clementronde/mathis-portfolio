@@ -30,10 +30,9 @@ export function Dock() {
 
   const iconSize = isSmall ? 36 : 44;
 
-  // Dock vertical sur le côté droit — toutes tailles d'écran
   return (
     <div
-      className="fixed right-3 top-1/2 -translate-y-1/2 z-[90] px-2 py-2.5 flex flex-col items-center gap-1 rounded-2xl"
+      className="fixed right-3 top-1/2 -translate-y-1/2 z-[90] px-2 py-2.5 flex flex-col items-center gap-1 rounded-2xl lg:right-auto lg:top-auto lg:bottom-4 lg:left-1/2 lg:-translate-x-1/2 lg:translate-y-0 lg:flex-row lg:gap-2 lg:px-3 lg:py-2"
       style={panelStyle}
       role="toolbar"
       aria-label="Dock d'applications"
@@ -46,23 +45,21 @@ export function Dock() {
             onClick={() => { openWindow(app.id); setStep(getOpenStepIndexForApp(app.id)); }}
             aria-label={`Ouvrir ${app.label}`}
             title={app.label}
-            className="relative flex items-center group outline-none"
-            whileHover={{ x: -8, scale: 1.18 }}
+            className="relative flex items-center justify-center group outline-none"
+            whileHover={isSmall ? { x: -8, scale: 1.18 } : { y: -8, scale: 1.18 }}
             whileTap={{ scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
           >
             <AppIcon id={app.id as AppId} size={iconSize} />
 
-            {/* Point d'ouverture — à gauche de l'icône */}
             <span
-              className="absolute -left-2 w-1 h-1 rounded-full bg-white/75 transition-opacity"
+              className="absolute -left-2 w-1 h-1 rounded-full bg-white/75 transition-opacity lg:left-1/2 lg:-bottom-1.5 lg:-translate-x-1/2"
               style={{ opacity: isOpen ? 1 : 0 }}
               aria-hidden="true"
             />
 
-            {/* Tooltip à gauche */}
             <span
-              className="absolute right-full mr-3 bg-black/80 text-white text-[11px] px-2 py-1 rounded-md
+              className="absolute right-full mr-3 bg-black/80 text-white text-[11px] px-2 py-1 rounded-md lg:right-auto lg:bottom-full lg:mb-3 lg:mr-0
                          whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity"
             >
               {app.label}

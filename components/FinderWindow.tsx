@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { AppWindow, ChevronLeft, ChevronRight, Clock, Download, FileText, Monitor } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, FileText, Monitor } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Window } from './Window';
 import { Lightbox } from './Lightbox';
 import { PROJECTS, type Project } from '@/data/projects';
-import { useWindowStore } from '@/store/useWindowStore';
+import { NOTES, type Note } from '@/data/notes';
+import { useWindowStore, type RecentItem } from '@/store/useWindowStore';
 import { AppIcon } from './icons/AppIcons';
 import { encodeSrc } from '@/utils/path';
 
@@ -29,29 +30,23 @@ const FINDER_PROJECTS = PROJECTS.filter((project) => FINDER_PROJECT_IDS.includes
 const DESKTOP_PROJECT_IDS = ['noclout', 'shoot-les-rats', 'mariage-he', 'lisboa', 'berlin'];
 const DESKTOP_PROJECTS = PROJECTS.filter((project) => DESKTOP_PROJECT_IDS.includes(project.id));
 
-type FinderSection = 'recents' | 'desktop' | 'documents' | 'downloads' | 'applications';
+type FinderSection = 'recents' | 'desktop' | 'documents';
 
 const SIDEBAR_ITEMS = [
   { id: 'desktop', label: 'Bureau', icon: Monitor },
   { id: 'documents', label: 'Documents', icon: FileText },
-  { id: 'downloads', label: 'Téléchargement', icon: Download },
-  { id: 'applications', label: 'Applications', icon: AppWindow },
 ] satisfies { id: FinderSection; label: string; icon: typeof Monitor }[];
 
 const SECTION_PROJECTS: Record<FinderSection, Project[]> = {
   recents: FINDER_PROJECTS,
   desktop: DESKTOP_PROJECTS,
   documents: FINDER_PROJECTS,
-  downloads: FINDER_PROJECTS,
-  applications: FINDER_PROJECTS,
 };
 
 const SECTION_TITLES: Record<FinderSection, string> = {
   recents: 'Récents',
   desktop: 'Bureau',
   documents: 'Documents',
-  downloads: 'Téléchargement',
-  applications: 'Applications',
 };
 
 const PROJECT_SECTION_BY_ID = new Map<string, FinderSection>([
@@ -59,13 +54,14 @@ const PROJECT_SECTION_BY_ID = new Map<string, FinderSection>([
   ...DESKTOP_PROJECTS.map((project) => [project.id, 'desktop'] as const),
 ]);
 
-const ALL_FINDER_PROJECTS = [...FINDER_PROJECTS, ...DESKTOP_PROJECTS].filter(
-  (project, index, projects) => projects.findIndex((p) => p.id === project.id) === index
-);
-
 function findFinderProject(id: string | null) {
   if (!id) return null;
-  return ALL_FINDER_PROJECTS.find((project) => project.id === id) ?? null;
+  return PROJECTS.find((project) => project.id === id) ?? null;
+}
+
+function findNote(id: string | null) {
+  if (!id) return null;
+  return NOTES.find((note) => note.id === id) ?? null;
 }
 
 function getProjectSection(project: Project | null): FinderSection | null {
@@ -74,6 +70,20 @@ function getProjectSection(project: Project | null): FinderSection | null {
 
 function getSectionProjects(section: FinderSection) {
   return SECTION_PROJECTS[section];
+}
+
+type ResolvedRecentItem =
+  | { id: string; type: 'project'; project: Project }
+  | { id: string; type: 'note'; note: Note };
+
+function resolveRecentItem(item: RecentItem): ResolvedRecentItem | null {
+  if (item.type === 'project') {
+    const project = findFinderProject(item.itemId);
+    return project ? { id: item.id, type: 'project', project } : null;
+  }
+
+  const note = findNote(item.itemId);
+  return note ? { id: item.id, type: 'note', note } : null;
 }
 
 function getSidebarButtonStyle(active: boolean): React.CSSProperties {
@@ -152,9 +162,77 @@ function SidebarProjectList({
   );
 }
 
+function RecentItemIcon({
+  item,
+  size,
+}: {
+  item: ResolvedRecentItem;
+  size: number;
+}) {
+  if (item.type === 'project') {
+    return <FolderIcon coverImage={item.project.coverImage} color={item.project.color} size={size} />;
+  }
+
+  return (
+    <div
+      className="flex items-center justify-center shrink-0"
+      style={{
+        width: size,
+        height: size,
+        color: '#c29300',
+      }}
+    >
+      <FileText size={Math.round(size * 0.72)} strokeWidth={1.7} />
+    </div>
+  );
+}
+
+function RecentItemsList({
+  items,
+  isMobile,
+  onOpen,
+}: {
+  items: ResolvedRecentItem[];
+  isMobile: boolean;
+  onOpen: (item: ResolvedRecentItem) => void;
+}) {
+  if (items.length === 0) {
+    return (
+      <div className={`${isMobile ? 'px-2 pt-4 text-[11px]' : 'px-2 pt-6 text-[14px]'}`} style={{ color: 'rgba(0,0,0,0.42)' }}>
+        Les dossiers et notes ouverts apparaîtront ici.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {items.map((item, index) => {
+        const title = item.type === 'project' ? item.project.title : item.note.title;
+        const meta = item.type === 'project' ? `${item.project.images.length} photos` : 'Note';
+
+        return (
+          <button
+            key={item.id}
+            onClick={() => onOpen(item)}
+            className={`w-full ${isMobile ? 'h-[42px] gap-2' : 'h-[58px] gap-3'} px-2 flex items-center rounded-md text-left transition-colors`}
+            style={{ background: index === 0 ? 'rgba(0,0,0,0.06)' : 'transparent' }}
+          >
+            <RecentItemIcon item={item} size={isMobile ? 24 : 36} />
+            <span className="min-w-0 flex-1">
+              <span className={`${isMobile ? 'text-[11px]' : 'text-[15px]'} block font-semibold truncate`}>{title}</span>
+              <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} block truncate`} style={{ color: 'rgba(0,0,0,0.42)' }}>{meta}</span>
+            </span>
+            <ChevronRight size={isMobile ? 13 : 22} className="shrink-0" style={{ color: 'rgba(0,0,0,0.55)' }} />
+          </button>
+        );
+      })}
+    </>
+  );
+}
+
 /* ─── Main component ─────────────────────────────────────────────── */
 export function FinderWindow() {
-  const { finderFolder } = useWindowStore();
+  const { finderFolder, recentItems, openNote, recordRecentProject } = useWindowStore();
   const [selectedProject, setSelectedProject] = useState<Project | null>(
     () => findFinderProject(finderFolder)
   );
@@ -189,6 +267,7 @@ export function FinderWindow() {
     setSelectedProject(project);
     setActiveSection(getProjectSection(project) ?? activeSection);
     setActiveImageIndex(0);
+    recordRecentProject(project.id);
   }
 
   function openSection(section: FinderSection) {
@@ -197,12 +276,24 @@ export function FinderWindow() {
     setActiveImageIndex(0);
   }
 
+  function openRecentItem(item: ResolvedRecentItem) {
+    if (item.type === 'project') {
+      openProject(item.project);
+      return;
+    }
+
+    openNote(item.note.id);
+  }
+
   const title = selectedProject
     ? selectedProject.title
     : SECTION_TITLES[activeSection];
 
   const activeImage = selectedProject?.images[activeImageIndex] ?? selectedProject?.coverImage;
   const visibleProjects = getSectionProjects(activeSection);
+  const visibleRecentItems = recentItems
+    .map(resolveRecentItem)
+    .filter((item): item is ResolvedRecentItem => item !== null);
 
   return (
     <Window
@@ -402,24 +493,49 @@ export function FinderWindow() {
                   className="h-full flex"
                 >
                   <div className={`${isMobile ? 'w-full px-3 pt-2' : 'w-[285px] px-7 pt-6'} shrink-0`}>
-                    {visibleProjects.map((project, index) => (
-                      <button
-                        key={project.id}
-                        onClick={() => openProject(project)}
-                        className={`w-full ${isMobile ? 'h-[38px] gap-2' : 'h-[54px] gap-3'} px-2 flex items-center rounded-md text-left transition-colors`}
-                        style={{ background: index === 0 ? 'rgba(0,0,0,0.06)' : 'transparent' }}
-                      >
-                        <FolderIcon coverImage={project.coverImage} color={project.color} size={isMobile ? 22 : 34} />
-                        <span className={`${isMobile ? 'text-[11px]' : 'text-[15px]'} font-semibold truncate`}>{project.title}</span>
-                        <ChevronRight size={isMobile ? 13 : 22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
-                      </button>
-                    ))}
+                    {activeSection === 'recents' ? (
+                      <RecentItemsList
+                        items={visibleRecentItems}
+                        isMobile={isMobile}
+                        onOpen={openRecentItem}
+                      />
+                    ) : (
+                      visibleProjects.map((project, index) => (
+                        <button
+                          key={project.id}
+                          onClick={() => openProject(project)}
+                          className={`w-full ${isMobile ? 'h-[38px] gap-2' : 'h-[54px] gap-3'} px-2 flex items-center rounded-md text-left transition-colors`}
+                          style={{ background: index === 0 ? 'rgba(0,0,0,0.06)' : 'transparent' }}
+                        >
+                          <FolderIcon coverImage={project.coverImage} color={project.color} size={isMobile ? 22 : 34} />
+                          <span className={`${isMobile ? 'text-[11px]' : 'text-[15px]'} font-semibold truncate`}>{project.title}</span>
+                          <ChevronRight size={isMobile ? 13 : 22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
+                        </button>
+                      ))
+                    )}
                   </div>
                   {!isMobile && (
                     <>
                       <div className="w-px h-full" style={{ background: 'rgba(0,0,0,0.08)' }} />
                       <div className="flex-1 flex items-center justify-center px-10 pb-12">
-                        {visibleProjects[0] ? (
+                        {activeSection === 'recents' && visibleRecentItems[0]?.type === 'note' ? (
+                          <div className="flex flex-col items-center gap-3" style={{ color: 'rgba(0,0,0,0.46)' }}>
+                            <RecentItemIcon item={visibleRecentItems[0]} size={96} />
+                            <span className="text-[15px] font-semibold">{visibleRecentItems[0].note.title}</span>
+                          </div>
+                        ) : activeSection === 'recents' && visibleRecentItems[0]?.type === 'project' ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={encodeSrc(visibleRecentItems[0].project.coverImage)}
+                            alt=""
+                            className="max-w-[58%] max-h-[62%] object-contain"
+                            draggable={false}
+                          />
+                        ) : activeSection === 'recents' ? (
+                          <div className="text-[14px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
+                            Aucun élément récent
+                          </div>
+                        ) : visibleProjects[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={encodeSrc(visibleProjects[0].coverImage)}

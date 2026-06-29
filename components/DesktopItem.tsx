@@ -100,7 +100,7 @@ export function DesktopItem({
           backgroundImage: imageSrc && type !== 'map' ? `url("${encodeSrc(imageSrc)}")` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          borderRadius: type === 'folder' ? 12 : 8,
+          borderRadius: 0,
           boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
           overflow: 'hidden',
           position: 'relative',
