@@ -85,7 +85,6 @@ export function DesktopItem({
       }}
       onDragEnd={handleDragEnd}
       onClick={handleClick}
-      whileHover={{ y: -4, scale: 1.03 }}
       whileDrag={{ scale: 1.05, zIndex: 30 }}
       whileTap={{ scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 300, damping: 18 }}
@@ -105,7 +104,7 @@ export function DesktopItem({
           overflow: 'hidden',
           position: 'relative',
         }}
-        className="transition-shadow group-hover:shadow-[0_12px_32px_rgba(0,0,0,0.7)]"
+        className="transition-shadow"
       >
         {type === 'map' && (
           <div className="absolute inset-0" style={{ background: '#d9f0dc' }}>

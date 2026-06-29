@@ -63,7 +63,7 @@ const DESKTOP_ITEMS = [
   {
     id: 'couscous-item',
     label: 'Couscous',
-    imageSrc: '/images/desktop/Couscous.png',
+    imageSrc: '/images/desktop/ShootpourleBar-RestaurantLeNouveauMagnoliasitueau129RuedesPyrenees75020Pari-ezgif.com-video-to-gif-converter.gif',
     imageColor: '#2e1a00',
     rotate: 0,
     style: { right: '7%', top: '22%' },
