@@ -23,6 +23,7 @@ interface WindowProps {
   defaultSize?: { width: number; height: number };
   className?: string;
   chrome?: 'default' | 'frameless';
+  fixedAspectRatio?: number;
 }
 
 const RESIZE_HANDLES = [
@@ -46,15 +47,24 @@ function isMobileViewport() {
 const MOBILE_BOTTOM_GAP = 32;
 const VIEWPORT_GAP = 16;
 
-function responsiveSize(base: { width: number; height: number }) {
+function fitAspectSize(size: { width: number; height: number }, aspectRatio?: number) {
+  if (!aspectRatio) return size;
+
+  const byWidth = { width: size.width, height: Math.round(size.width / aspectRatio) };
+  if (byWidth.height <= size.height) return byWidth;
+
+  return { width: Math.round(size.height * aspectRatio), height: size.height };
+}
+
+function responsiveSize(base: { width: number; height: number }, aspectRatio?: number) {
   if (typeof window === 'undefined') return base;
   const mobile = isMobileViewport();
   const GAP = mobile ? 0 : VIEWPORT_GAP;
   const maxHeight = window.innerHeight - TOPBAR_H - (mobile ? MOBILE_BOTTOM_GAP : GAP * 2);
-  return {
+  return fitAspectSize({
     width: Math.min(base.width, window.innerWidth - DOCK_SIDE_W - GAP * 2),
     height: Math.min(base.height, maxHeight),
-  };
+  }, aspectRatio);
 }
 
 function centeredPos(w: number, h: number) {
@@ -81,6 +91,7 @@ export function Window({
   defaultSize = { width: 760, height: 520 },
   className = '',
   chrome = 'default',
+  fixedAspectRatio,
 }: WindowProps) {
   const { closeWindow, focusWindow, activeWindow } = useWindowStore();
   const isActive = activeWindow === id;
@@ -108,7 +119,7 @@ export function Window({
 
   // Applique la taille responsive et centre la fenêtre après montage
   useLayoutEffect(() => {
-    const s = responsiveSize(defaultSize);
+    const s = responsiveSize(defaultSize, fixedAspectRatio);
     setSize(s);
     savedSize.current = s;
     if (!defaultPosition) {
@@ -124,7 +135,7 @@ export function Window({
     function handleResize() {
       if (isMaximized) return;
 
-      const nextSize = responsiveSize(defaultSize);
+      const nextSize = responsiveSize(defaultSize, fixedAspectRatio);
       setSize((currentSize) => {
         const width = Math.min(currentSize.width, nextSize.width);
         const height = Math.min(currentSize.height, nextSize.height);
@@ -144,7 +155,7 @@ export function Window({
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [defaultPosition, defaultSize, isMaximized, x, y]);
+  }, [defaultPosition, defaultSize, fixedAspectRatio, isMaximized, x, y]);
 
   // Mount animation
   useEffect(() => {
@@ -234,6 +245,21 @@ export function Window({
           ny = startY + (startH - nh);
         }
 
+        if (fixedAspectRatio) {
+          const widthDriven =
+            dir.includes('e') ||
+            dir.includes('w') ||
+            Math.abs(dx) >= Math.abs(dy);
+
+          if (widthDriven) {
+            nh = Math.max(MIN_H, Math.round(nw / fixedAspectRatio));
+            if (dir.includes('n')) ny = startY + (startH - nh);
+          } else {
+            nw = Math.max(MIN_W, Math.round(nh * fixedAspectRatio));
+            if (dir.includes('w')) nx = startX + (startW - nw);
+          }
+        }
+
         x.set(nx);
         y.set(ny);
         setSize({ width: nw, height: nh });
@@ -255,10 +281,10 @@ export function Window({
       savedSize.current = { ...size };
       fmAnimate(x, 0, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
       fmAnimate(y, TOPBAR_H, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
-      setSize({
+      setSize(fitAspectSize({
         width: typeof window !== 'undefined' ? window.innerWidth - dockW : 1440,
         height: typeof window !== 'undefined' ? window.innerHeight - TOPBAR_H : 900,
-      });
+      }, fixedAspectRatio));
     } else {
       fmAnimate(x, savedPos.current.x, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
       fmAnimate(y, savedPos.current.y, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });

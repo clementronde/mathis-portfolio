@@ -10,6 +10,8 @@ const ICON_FILES: Partial<Record<AppId, string>> = {
   photos: '/images/icons/Photosicon.png',
   music:  '/images/icons/musiqueIcon.png',
   maps:   '/images/icons/localistionicon.png',
+  photoshop: '/images/icons/photoshopicon.png',
+  premiere: '/images/icons/premiereproicon.png',
 };
 
 const FULL_BLEED_ICONS: Set<AppId> = new Set();

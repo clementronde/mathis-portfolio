@@ -12,4 +12,6 @@ export const DOCK_APPS: App[] = [
   { id: 'photos', label: 'Photos' },
   { id: 'music', label: 'Music' },
   { id: 'maps', label: 'Maps' },
+  { id: 'photoshop', label: 'Photoshop' },
+  { id: 'premiere', label: 'Premiere Pro' },
 ];

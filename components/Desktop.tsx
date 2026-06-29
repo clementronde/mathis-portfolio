@@ -18,6 +18,8 @@ import { NotesWindow } from './NotesWindow';
 import { PhotosWindow } from './PhotosWindow';
 import { MapsWindow } from './MapsWindow';
 import { MusicWindow } from './MusicWindow';
+import { PhotoshopWindow } from './PhotoshopWindow';
+import { PremiereWindow } from './PremiereWindow';
 import { LockScreen } from './LockScreen';
 import { Lightbox } from './Lightbox';
 import type { AppId } from '@/store/useWindowStore';
@@ -97,6 +99,8 @@ const WINDOWS: { id: AppId; element: React.ReactNode }[] = [
   { id: 'photos',    element: <PhotosWindow key="photos" /> },
   { id: 'maps',      element: <MapsWindow key="maps" /> },
   { id: 'music',  element: <MusicWindow key="music" /> },
+  { id: 'photoshop', element: <PhotoshopWindow key="photoshop" /> },
+  { id: 'premiere',  element: <PremiereWindow key="premiere" /> },
 ];
 
 const STATIC_PRELOAD_IMAGES = [
@@ -119,6 +123,9 @@ const STATIC_PRELOAD_IMAGES = [
   '/images/icons/lightroomicon.png',
   '/images/icons/photoshopicon.png',
   '/images/icons/premiereproicon.png',
+  '/Photoshop/Photoshopbg.png',
+  '/Photoshop/imagephotoshop.png',
+  '/premiere/Premierebg.png',
 ] as const;
 
 const SITE_PRELOAD_IMAGES = Array.from(

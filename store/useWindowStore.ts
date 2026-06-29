@@ -7,7 +7,9 @@ export type AppId =
   | 'notes'
   | 'photos'
   | 'maps'
-  | 'music';
+  | 'music'
+  | 'photoshop'
+  | 'premiere';
 
 export type RecentItemType = 'project' | 'note';
 
