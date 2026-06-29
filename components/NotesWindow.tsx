@@ -29,6 +29,7 @@ export function NotesWindow() {
   );
   const step = useScrollytellingStore((state) => state.step);
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileNotesOpen, setMobileNotesOpen] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
     const update = () => setIsMobile(mq.matches);
@@ -47,6 +48,11 @@ export function NotesWindow() {
 
   function selectFolder(nextFolder: NoteCategory) {
     setActiveFolder(nextFolder);
+    if (isMobile) {
+      setMobileNotesOpen(true);
+      return;
+    }
+
     const nextNote = NOTES.find((note) => note.category === nextFolder);
     if (nextNote) selectNote(nextNote);
   }
@@ -74,7 +80,7 @@ export function NotesWindow() {
       chrome="frameless"
       defaultSize={{ width: 920, height: 520 }}
     >
-      <div className="flex h-full" style={{ background: '#ffffff', color: '#000000' }}>
+      <div className="relative flex h-full overflow-hidden" style={{ background: '#ffffff', color: '#000000' }}>
         {/* Sidebar */}
         <div
           className={`${isMobile ? 'w-[110px]' : 'w-[210px]'} shrink-0 flex flex-col overflow-hidden`}
@@ -90,17 +96,53 @@ export function NotesWindow() {
           <div className={`flex-1 overflow-y-auto ${isMobile ? 'px-2' : 'px-5'}`}>
             {NOTE_FOLDERS.map((folder) => {
               const active = activeFolder === folder.id;
+              const folderNotes = NOTES.filter((note) => note.category === folder.id);
+              const showMobileSubmenu = isMobile && active && mobileNotesOpen;
               return (
-              <button
-                key={folder.label}
-                onClick={() => selectFolder(folder.id)}
-                className={`w-full ${isMobile ? 'h-8 gap-1.5 px-1' : 'h-10 gap-3 px-2'} flex items-center rounded-md text-left font-medium transition-colors`}
-                style={{ background: active ? 'rgba(0,0,0,0.045)' : 'transparent' }}
-              >
-                <FileText size={isMobile ? 13 : 21} strokeWidth={1.6} className="shrink-0" />
-                <span className={`min-w-0 flex-1 truncate ${isMobile ? 'text-[10px]' : 'text-[14px]'}`}>{folder.label}</span>
-                {!isMobile && <span style={{ color: 'rgba(0,0,0,0.45)' }}>{getNoteCount(folder.id)}</span>}
-              </button>
+                <div key={folder.label}>
+                  <button
+                    onClick={() => {
+                      if (isMobile && active) {
+                        setMobileNotesOpen((open) => !open);
+                        return;
+                      }
+                      selectFolder(folder.id);
+                    }}
+                    className={`w-full ${isMobile ? 'h-8 gap-1.5 px-1' : 'h-10 gap-3 px-2'} flex items-center rounded-md text-left font-medium transition-colors`}
+                    style={{ background: active ? 'rgba(0,0,0,0.045)' : 'transparent' }}
+                  >
+                    <FileText size={isMobile ? 13 : 21} strokeWidth={1.6} className="shrink-0" />
+                    <span className={`min-w-0 flex-1 truncate ${isMobile ? 'text-[10px]' : 'text-[14px]'}`}>{folder.label}</span>
+                    {!isMobile && <span style={{ color: 'rgba(0,0,0,0.45)' }}>{getNoteCount(folder.id)}</span>}
+                  </button>
+                  {isMobile && (
+                    <AnimatePresence initial={false}>
+                      {showMobileSubmenu && (
+                        <motion.div
+                          key={`${folder.id}-submenu`}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.16 }}
+                          className="overflow-hidden pl-4 pr-1 py-1"
+                        >
+                          {folderNotes.map((note) => (
+                            <button
+                              key={note.id}
+                              onClick={() => selectNote(note)}
+                              aria-label={`Ouvrir la note ${note.title}`}
+                              className="w-full text-left px-2 py-2 rounded-md"
+                              style={{ background: selected.id === note.id ? '#FFC400' : 'transparent' }}
+                            >
+                              <p className="text-[10px] font-medium truncate" style={{ color: '#000000' }}>{note.listTitle ?? note.title}</p>
+                              <p className="text-[9px] mt-0.5 truncate" style={{ color: selected.id === note.id ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.42)' }}>{note.date}</p>
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+                </div>
               );
             })}
           </div>

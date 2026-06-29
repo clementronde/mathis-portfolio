@@ -37,28 +37,35 @@ const RESIZE_HANDLES = [
 ] as const;
 
 const TOPBAR_H = 28;
-const DOCK_SIDE_W = 68; // dock vertical droit (desktop seulement)
+const DOCK_SIDE_W = 68;
 
 function isMobileViewport() {
   return typeof window !== 'undefined' && window.innerWidth < 768;
 }
 
-const MOBILE_BOTTOM_GAP = 32; // breathing room below the window on mobile
+const MOBILE_BOTTOM_GAP = 32;
+const VIEWPORT_GAP = 16;
 
 function responsiveSize(base: { width: number; height: number }) {
   if (typeof window === 'undefined') return base;
   const mobile = isMobileViewport();
-  const GAP = mobile ? 0 : 16;
+  const GAP = mobile ? 0 : VIEWPORT_GAP;
   const maxHeight = window.innerHeight - TOPBAR_H - (mobile ? MOBILE_BOTTOM_GAP : GAP * 2);
   return {
     width: Math.min(base.width, window.innerWidth - DOCK_SIDE_W - GAP * 2),
-    height: mobile ? maxHeight : Math.min(base.height, maxHeight),
+    height: Math.min(base.height, maxHeight),
   };
 }
 
 function centeredPos(w: number, h: number) {
   if (typeof window === 'undefined') return { x: 80, y: 60 };
-  if (isMobileViewport()) return { x: 0, y: TOPBAR_H };
+  if (isMobileViewport()) {
+    const availableHeight = window.innerHeight - TOPBAR_H - MOBILE_BOTTOM_GAP;
+    return {
+      x: 0,
+      y: Math.max(TOPBAR_H, TOPBAR_H + Math.round((availableHeight - h) / 2)),
+    };
+  }
   return {
     x: Math.max(0, Math.round((window.innerWidth - DOCK_SIDE_W - w) / 2)),
     y: Math.max(TOPBAR_H, Math.round((window.innerHeight - h) / 2)),
@@ -112,6 +119,32 @@ export function Window({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    function handleResize() {
+      if (isMaximized) return;
+
+      const nextSize = responsiveSize(defaultSize);
+      setSize((currentSize) => {
+        const width = Math.min(currentSize.width, nextSize.width);
+        const height = Math.min(currentSize.height, nextSize.height);
+        const next = { width, height };
+
+        if (!defaultPosition) {
+          const pos = centeredPos(next.width, next.height);
+          x.set(pos.x);
+          y.set(pos.y);
+          savedPos.current = pos;
+        }
+
+        savedSize.current = next;
+        return next;
+      });
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [defaultPosition, defaultSize, isMaximized, x, y]);
 
   // Mount animation
   useEffect(() => {
