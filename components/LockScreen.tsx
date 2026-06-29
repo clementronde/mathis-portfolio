@@ -3,12 +3,16 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface LockScreenProps {
+  canUnlock: boolean;
+  loadedImages: number;
   onUnlock: () => void;
+  totalImages: number;
 }
 
-export function LockScreen({ onUnlock }: LockScreenProps) {
+export function LockScreen({ canUnlock, loadedImages, onUnlock, totalImages }: LockScreenProps) {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
+  const progress = totalImages > 0 ? Math.round((loadedImages / totalImages) * 100) : 100;
 
   useEffect(() => {
     function update() {
@@ -26,11 +30,13 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
   return (
     <motion.div
       key="lockscreen"
-      className="fixed inset-0 z-[200] flex flex-col items-center justify-center cursor-pointer select-none overflow-hidden"
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center select-none overflow-hidden"
       style={{
         backgroundImage: `url('/images/desktop/wallpaperverouillage.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundColor: '#141414',
+        cursor: canUnlock ? 'pointer' : 'wait',
       }}
       onClick={onUnlock}
       exit={{
@@ -98,9 +104,22 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
         >
           mathis straebler
         </span>
-        <span className="mt-2 text-[12px] sm:text-[13px] tracking-[0.16em] uppercase font-medium text-white/70">
-          Cliquer pour entrer
+        <span className="mt-2 text-[12px] sm:text-[13px] tracking-[0.16em] font-medium text-white/70">
+          {canUnlock ? 'Cliquer pour entrer' : `Chargement ${progress}%`}
         </span>
+        <div
+          className="mt-4 h-[3px] w-[132px] overflow-hidden rounded-full"
+          style={{ background: 'rgba(255,255,255,0.22)' }}
+          aria-hidden="true"
+        >
+          <motion.div
+            className="h-full rounded-full"
+            style={{ background: 'rgba(255,255,255,0.82)' }}
+            initial={{ width: 0 }}
+            animate={{ width: `${canUnlock ? 100 : progress}%` }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+          />
+        </div>
       </motion.div>
     </motion.div>
   );
