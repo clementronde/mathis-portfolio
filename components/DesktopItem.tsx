@@ -89,6 +89,7 @@ export function DesktopItem({
       whileTap={{ scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 300, damping: 18 }}
       aria-label={`Ouvrir ${label}`}
+      data-scrollytelling-ignore="true"
     >
       {/* Image / folder / map */}
       <div

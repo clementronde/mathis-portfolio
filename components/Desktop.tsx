@@ -66,7 +66,7 @@ const DESKTOP_ITEMS = [
   {
     id: 'couscous-item',
     label: 'Couscous',
-    imageSrc: '/images/desktop/ShootpourleBar-RestaurantLeNouveauMagnoliasitueau129RuedesPyrenees75020Pari-ezgif.com-video-to-gif-converter.gif',
+    imageSrc: '/images/desktop/videocouscous.gif',
     imageColor: '#2e1a00',
     rotate: 0,
     style: { right: '7%', top: '22%' },
@@ -106,6 +106,7 @@ const STATIC_PRELOAD_IMAGES = [
   '/images/desktop/wallpaperverouillage.png',
   '/images/desktop/Ellipsemathis.png',
   '/images/desktop/Couscous.png',
+  '/images/desktop/videocouscous.gif',
   '/images/MSA.svg',
   '/images/icons/Findericon.png',
   '/images/icons/Mailicon.png',
@@ -270,12 +271,13 @@ export function Desktop() {
 
   // Wheel / touch scroll → advance/retreat step
   useEffect(() => {
-    const isInsideInteractiveWindow = (target: EventTarget | null) =>
-      target instanceof Element && target.closest('[data-window-interactive="true"]') !== null;
+    const shouldIgnoreScrollytellingGesture = (target: EventTarget | null) =>
+      target instanceof Element &&
+      target.closest('[data-window-interactive="true"], [data-scrollytelling-ignore="true"]') !== null;
 
     const handleWheel = (e: WheelEvent) => {
       if (locked) return;
-      if (isInsideInteractiveWindow(e.target)) return;
+      if (shouldIgnoreScrollytellingGesture(e.target)) return;
       if (scrollCooldown.current) return;
       scrollCooldown.current = true;
       setTimeout(() => { scrollCooldown.current = false; }, 900);
@@ -284,15 +286,15 @@ export function Desktop() {
     };
 
     let touchStartY = 0;
-    let touchStartedInsideWindow = false;
+    let touchStartedInsideIgnoredElement = false;
     const handleTouchStart = (e: TouchEvent) => {
       if (locked) return;
-      touchStartedInsideWindow = isInsideInteractiveWindow(e.target);
+      touchStartedInsideIgnoredElement = shouldIgnoreScrollytellingGesture(e.target);
       touchStartY = e.touches[0].clientY;
     };
     const handleTouchEnd = (e: TouchEvent) => {
       if (locked) return;
-      if (touchStartedInsideWindow || isInsideInteractiveWindow(e.target)) return;
+      if (touchStartedInsideIgnoredElement || shouldIgnoreScrollytellingGesture(e.target)) return;
       const delta = touchStartY - e.changedTouches[0].clientY;
       if (Math.abs(delta) < 50 || scrollCooldown.current) return;
       scrollCooldown.current = true;
