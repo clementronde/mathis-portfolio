@@ -36,11 +36,32 @@ const RESIZE_HANDLES = [
   { dir: 'sw', style: { bottom: 0, left: 0, width: 10, height: 10, cursor: 'nesw-resize' } },
 ] as const;
 
+const TOPBAR_H = 28;
+const DOCK_SIDE_W = 68; // dock vertical droit (desktop seulement)
+
+function isMobileViewport() {
+  return typeof window !== 'undefined' && window.innerWidth < 768;
+}
+
+const MOBILE_BOTTOM_GAP = 32; // breathing room below the window on mobile
+
+function responsiveSize(base: { width: number; height: number }) {
+  if (typeof window === 'undefined') return base;
+  const mobile = isMobileViewport();
+  const GAP = mobile ? 0 : 16;
+  const maxHeight = window.innerHeight - TOPBAR_H - (mobile ? MOBILE_BOTTOM_GAP : GAP * 2);
+  return {
+    width: Math.min(base.width, window.innerWidth - DOCK_SIDE_W - GAP * 2),
+    height: mobile ? maxHeight : Math.min(base.height, maxHeight),
+  };
+}
+
 function centeredPos(w: number, h: number) {
   if (typeof window === 'undefined') return { x: 80, y: 60 };
+  if (isMobileViewport()) return { x: 0, y: TOPBAR_H };
   return {
-    x: Math.max(0, Math.round((window.innerWidth - w) / 2)),
-    y: Math.max(28, Math.round((window.innerHeight - h) / 2)),
+    x: Math.max(0, Math.round((window.innerWidth - DOCK_SIDE_W - w) / 2)),
+    y: Math.max(TOPBAR_H, Math.round((window.innerHeight - h) / 2)),
   };
 }
 
@@ -57,6 +78,15 @@ export function Window({
   const { closeWindow, focusWindow, activeWindow } = useWindowStore();
   const isActive = activeWindow === id;
   const { step, setStep } = useScrollytellingStore();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
   const isScrollytelling = getStepAppId(step) === id;
 
   const initPos = defaultPosition ?? centeredPos(defaultSize.width, defaultSize.height);
@@ -69,10 +99,13 @@ export function Window({
   const controls = useAnimationControls();
   const isFrameless = chrome === 'frameless';
 
-  // Centre la fenêtre après montage (window.innerHeight n'existe pas côté serveur)
+  // Applique la taille responsive et centre la fenêtre après montage
   useLayoutEffect(() => {
+    const s = responsiveSize(defaultSize);
+    setSize(s);
+    savedSize.current = s;
     if (!defaultPosition) {
-      const pos = centeredPos(size.width, size.height);
+      const pos = centeredPos(s.width, s.height);
       x.set(pos.x);
       y.set(pos.y);
       savedPos.current = pos;
@@ -99,8 +132,13 @@ export function Window({
     const startY = clientY - y.get();
 
     const onMove = (me: PointerEvent) => {
-      x.set(me.clientX - startX);
-      y.set(me.clientY - startY);
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      // Keep at least 120px of the window visible on each axis
+      const clampedX = Math.max(-(size.width - 120), Math.min(vw - DOCK_SIDE_W - 120, me.clientX - startX));
+      const clampedY = Math.max(TOPBAR_H, Math.min(vh - 44, me.clientY - startY));
+      x.set(clampedX);
+      y.set(clampedY);
     };
     const onUp = () => {
       document.removeEventListener('pointermove', onMove);
@@ -111,7 +149,8 @@ export function Window({
   }
 
   function handleWindowPointerDownCapture(e: React.PointerEvent<HTMLDivElement>) {
-    if (isMaximized || e.button !== 0) return;
+    // Bloquer drag touch uniquement sur mobile (pas sur écrans tactiles desktop)
+    if (isMaximized || e.button !== 0 || (e.pointerType === 'touch' && isMobileViewport())) return;
 
     const target = e.target as HTMLElement;
     if (
@@ -177,14 +216,15 @@ export function Window({
 
   // ── Maximize ─────────────────────────────────────────────────────────────
   function toggleMaximize() {
+    const dockW = isMobileViewport() ? 0 : DOCK_SIDE_W;
     if (!isMaximized) {
       savedPos.current = { x: x.get(), y: y.get() };
       savedSize.current = { ...size };
       fmAnimate(x, 0, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
-      fmAnimate(y, 28, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
+      fmAnimate(y, TOPBAR_H, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
       setSize({
-        width: typeof window !== 'undefined' ? window.innerWidth : 1440,
-        height: typeof window !== 'undefined' ? window.innerHeight - 28 : 900,
+        width: typeof window !== 'undefined' ? window.innerWidth - dockW : 1440,
+        height: typeof window !== 'undefined' ? window.innerHeight - TOPBAR_H : 900,
       });
     } else {
       fmAnimate(x, savedPos.current.x, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
@@ -243,7 +283,7 @@ export function Window({
         width: size.width,
         height: size.height,
         zIndex: isActive ? 50 : 40,
-        borderRadius: isMaximized ? 0 : isFrameless ? 24 : 12,
+        borderRadius: isMaximized ? 0 : isFrameless ? 28 : 16,
         originX: 0.5,
         originY: 0.5,
       }}
@@ -315,10 +355,12 @@ export function Window({
         )}
       </div>
 
-      {/* Content */}
+      {/* Content — stoppe la propagation touch pour éviter le déclenchement du scrollytelling */}
       <div
         className="flex-1 overflow-hidden"
         style={{ background: 'rgba(22,22,22,0.98)' }}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
       >
         {children}
       </div>

@@ -7,10 +7,7 @@ export type AppId =
   | 'notes'
   | 'photos'
   | 'maps'
-  | 'music'
-  | 'lightroom'
-  | 'photoshop'
-  | 'premiere';
+  | 'music';
 
 interface WindowStore {
   openWindows: AppId[];

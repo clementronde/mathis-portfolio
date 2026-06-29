@@ -5,7 +5,6 @@ import { ChevronDown } from 'lucide-react';
 import { useWindowStore } from '@/store/useWindowStore';
 import {
   useScrollytellingStore,
-  getOpenStepIndexForApp,
   getStepAppId,
   getStepFinderFolder,
   SCROLL_STEPS,
@@ -19,8 +18,7 @@ import { NotesWindow } from './NotesWindow';
 import { PhotosWindow } from './PhotosWindow';
 import { MapsWindow } from './MapsWindow';
 import { MusicWindow } from './MusicWindow';
-import { CreativeAppWindow } from './CreativeAppWindow';
-import { AppIcon } from './icons/AppIcons';
+import { LockScreen } from './LockScreen';
 import type { AppId } from '@/store/useWindowStore';
 
 // Desktop collage — 5 real projects
@@ -67,7 +65,7 @@ const DESKTOP_ITEMS = [
     imageSrc: '/images/projects/23-01 Maroc/DSC_0153.avif',
     imageColor: '#2e1a00',
     rotate: 0,
-    style: { right: '3.5%', top: '22%' },
+    style: { right: '7%', top: '22%' },
     width: 155,
     aspectRatio: '3/4',
     type: 'photo' as const,
@@ -87,44 +85,6 @@ const DESKTOP_ITEMS = [
   },
 ] as const;
 
-function MobileGrid() {
-  const { openWindow } = useWindowStore();
-  const setStep = useScrollytellingStore((state) => state.setStep);
-  const apps: { id: AppId; label: string }[] = [
-    { id: 'finder', label: 'Finder' },
-    { id: 'mail', label: 'Mail' },
-    { id: 'notes', label: 'Notes' },
-    { id: 'photos', label: 'Photos' },
-    { id: 'music', label: 'Music' },
-    { id: 'maps', label: 'Maps' },
-    { id: 'lightroom', label: 'Lightroom' },
-    { id: 'photoshop', label: 'Photoshop' },
-    { id: 'premiere', label: 'Premiere' },
-  ];
-
-  return (
-    <div className="h-full flex flex-col items-center justify-center px-6 pt-10">
-      <div className="grid grid-cols-4 gap-5">
-        {apps.map(({ id, label }) => (
-          <button
-            key={id}
-            onClick={() => {
-              openWindow(id);
-              setStep(getOpenStepIndexForApp(id));
-            }}
-            aria-label={`Ouvrir ${label}`}
-            className="flex flex-col items-center gap-1.5 group"
-          >
-            <AppIcon id={id} size={60} />
-            <span className="text-white text-[11px] opacity-70 group-hover:opacity-100 transition-opacity">
-              {label}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 const WINDOWS: { id: AppId; element: React.ReactNode }[] = [
   { id: 'finder',    element: <FinderWindow key="finder" /> },
@@ -132,10 +92,7 @@ const WINDOWS: { id: AppId; element: React.ReactNode }[] = [
   { id: 'notes',     element: <NotesWindow key="notes" /> },
   { id: 'photos',    element: <PhotosWindow key="photos" /> },
   { id: 'maps',      element: <MapsWindow key="maps" /> },
-  { id: 'music',     element: <MusicWindow key="music" /> },
-  { id: 'lightroom', element: <CreativeAppWindow key="lightroom" id="lightroom" /> },
-  { id: 'photoshop', element: <CreativeAppWindow key="photoshop" id="photoshop" /> },
-  { id: 'premiere',  element: <CreativeAppWindow key="premiere" id="premiere" /> },
+  { id: 'music',  element: <MusicWindow key="music" /> },
 ];
 
 const DESKTOP_ITEM_POSITIONS_KEY = 'portfolio-desktop-item-positions-v2';
@@ -153,6 +110,16 @@ export function Desktop() {
   const desktopItemsRef = useRef<HTMLDivElement>(null);
   const [itemPositions, setItemPositions] = useState<Record<string, React.CSSProperties>>(getDefaultItemPositions);
   const scrollCooldown = useRef(false);
+  const [locked, setLocked] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   useEffect(() => {
     const savedPositions = window.localStorage.getItem(DESKTOP_ITEM_POSITIONS_KEY);
@@ -238,21 +205,30 @@ export function Desktop() {
 
       <TopBar />
 
-      <div
-        className="absolute left-1/2 top-[72px] z-[9] -translate-x-1/2 hidden md:block pointer-events-none select-none"
+      {/* Logo MSA — desktop grand, mobile petit */}
+      <div className="absolute left-1/2 z-[9] -translate-x-1/2 pointer-events-none select-none"
+        style={{ top: '72px' }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/MSA.svg"
           alt="MSA"
-          className="block h-[58px] w-auto"
+          className="block w-auto hidden md:block"
+          style={{ height: 58, filter: 'drop-shadow(0 2px 20px rgba(0,0,0,0.45))' }}
           draggable={false}
-          style={{ filter: 'drop-shadow(0 2px 20px rgba(0,0,0,0.45))' }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/MSA.svg"
+          alt="MSA"
+          className="block w-auto md:hidden"
+          style={{ height: 36, filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.5))' }}
+          draggable={false}
         />
       </div>
 
-      {/* Desktop collage — desktop only */}
-      <div ref={desktopItemsRef} className="absolute inset-0 z-[10] hidden md:block">
+      {/* Desktop collage — toutes tailles, largeurs réduites sur mobile */}
+      <div ref={desktopItemsRef} className="absolute inset-0 z-[10]">
         {DESKTOP_ITEMS.map((item) => (
           <DesktopItem
             key={item.id}
@@ -261,7 +237,7 @@ export function Desktop() {
             imageColor={item.imageColor}
             rotate={item.rotate}
             style={itemPositions[item.id]}
-            width={item.width}
+            width={isMobile ? Math.round(item.width * 0.38) : item.width}
             aspectRatio={item.aspectRatio}
             type={item.type}
             dragConstraints={desktopItemsRef}
@@ -283,13 +259,8 @@ export function Desktop() {
         ))}
       </div>
 
-      {/* Mobile grid */}
-      <div className="absolute inset-0 z-[10] md:hidden">
-        <MobileGrid />
-      </div>
-
-      {/* Windows — desktop */}
-      <div className="absolute inset-0 z-[20] pointer-events-none hidden md:block">
+      {/* Windows — desktop + mobile (Window adapte sa taille via responsiveSize) */}
+      <div className="absolute inset-0 z-[20] pointer-events-none">
         <div className="pointer-events-auto">
           <AnimatePresence>
             {WINDOWS.filter(({ id }) => openWindows.includes(id)).map(({ element }) => element)}
@@ -297,26 +268,9 @@ export function Desktop() {
         </div>
       </div>
 
-      {/* Windows — mobile fullscreen */}
-      <div className="absolute inset-0 z-[20] pointer-events-none md:hidden">
-        <div className="pointer-events-auto">
-          <AnimatePresence>
-            {openWindows.includes('finder')    && <div key="finder-m"    className="absolute inset-0 pt-7"><FinderWindow /></div>}
-            {openWindows.includes('mail')      && <div key="mail-m"      className="absolute inset-0 pt-7"><MailWindow /></div>}
-            {openWindows.includes('notes')     && <div key="notes-m"     className="absolute inset-0 pt-7"><NotesWindow /></div>}
-            {openWindows.includes('photos')    && <div key="photos-m"    className="absolute inset-0 pt-7"><PhotosWindow /></div>}
-            {openWindows.includes('maps')      && <div key="maps-m"      className="absolute inset-0 pt-7"><MapsWindow /></div>}
-            {openWindows.includes('music')     && <div key="music-m"     className="absolute inset-0 pt-7"><MusicWindow /></div>}
-            {openWindows.includes('lightroom') && <div key="lr-m"        className="absolute inset-0 pt-7"><CreativeAppWindow id="lightroom" /></div>}
-            {openWindows.includes('photoshop') && <div key="ps-m"        className="absolute inset-0 pt-7"><CreativeAppWindow id="photoshop" /></div>}
-            {openWindows.includes('premiere')  && <div key="pr-m"        className="absolute inset-0 pt-7"><CreativeAppWindow id="premiere" /></div>}
-          </AnimatePresence>
-        </div>
-      </div>
-
       <Dock />
 
-      {/* ── Scroll hint (step 0 only) ── */}
+      {/* ── Scroll hint (step 0, desktop uniquement) ── */}
       <AnimatePresence>
         {step === 0 && (
           <motion.div
@@ -325,7 +279,7 @@ export function Desktop() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.4 }}
-            className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[80] flex flex-col items-center gap-1.5 pointer-events-none select-none"
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[80] hidden md:flex flex-col items-center gap-1.5 pointer-events-none select-none"
           >
             <span className="text-white/50 text-[11px] tracking-widest uppercase">Défiler pour explorer</span>
             <motion.div
@@ -338,8 +292,8 @@ export function Desktop() {
         )}
       </AnimatePresence>
 
-      {/* ── Step progress dots ── */}
-      <div className="fixed right-4 top-1/2 -translate-y-1/2 z-[80] flex flex-col gap-2 pointer-events-none select-none">
+      {/* ── Step progress dots — côté gauche (dock est à droite) ── */}
+      <div className="fixed left-4 top-1/2 -translate-y-1/2 z-[80] hidden md:flex flex-col gap-2 pointer-events-none select-none">
         {SCROLL_STEPS.map((_, i) => (
           <div
             key={i}
@@ -353,6 +307,13 @@ export function Desktop() {
           />
         ))}
       </div>
+
+      {/* ── Lock screen overlay ── */}
+      <AnimatePresence>
+        {locked && (
+          <LockScreen key="lockscreen" onUnlock={() => setLocked(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

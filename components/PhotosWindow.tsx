@@ -29,9 +29,18 @@ export function PhotosWindow() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
+  const [isMobile, setIsMobile] = useState(false);
   const step = useScrollytellingStore((state) => state.step);
   const windowContentRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
   const wheelZoomDeltaRef = useRef(0);
   const currentZoomRef = useRef(DEFAULT_ZOOM);
   const gestureStartZoomRef = useRef(DEFAULT_ZOOM);
@@ -156,9 +165,9 @@ export function PhotosWindow() {
       <div ref={windowContentRef} className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
         {/* Sidebar */}
         <div
-          className="w-[210px] shrink-0 flex flex-col overflow-y-auto"
+          className={`${isMobile ? 'w-[110px]' : 'w-[210px]'} shrink-0 flex flex-col overflow-y-auto`}
           style={{
-            paddingTop: 100,
+            paddingTop: isMobile ? 44 : 100,
             paddingBottom: 24,
             overscrollBehavior: 'contain',
             background: '#fbfbfb',
@@ -168,37 +177,37 @@ export function PhotosWindow() {
             zIndex: 2,
           }}
         >
-          {/* Library */}
           <button
             onClick={() => setSelectedProject(null)}
-            className="flex items-center gap-3 px-0 py-2 mx-[22px] rounded-lg text-[17px] font-medium transition-colors"
+            className={`flex items-center ${isMobile ? 'gap-1.5 py-1.5 mx-[6px] text-[10px]' : 'gap-3 py-2 mx-[22px] text-[17px]'} px-0 rounded-lg font-medium transition-colors`}
             style={{
               background: !selectedProject ? 'rgba(0,0,0,0.045)' : 'transparent',
               color: '#1d1d1f',
             }}
           >
-            <ImageIcon size={22} className="shrink-0" strokeWidth={2} />
-            <span>Bibliothèque</span>
+            <ImageIcon size={isMobile ? 13 : 22} className="shrink-0" strokeWidth={2} />
+            <span className="truncate">Bibliothèque</span>
           </button>
-          <div className="mx-[22px] mt-1 mb-1 text-[12px]" style={{ color: 'rgba(60,60,67,0.45)' }}>{ALL_PHOTOS.length} photos</div>
-
-          {/* Albums */}
-          <div className="mt-6 mb-4 px-[28px] text-[13px] font-semibold" style={{ color: 'rgba(60,60,67,0.68)' }}>
-            Albums
-          </div>
+          {!isMobile && (
+            <>
+              <div className="mx-[22px] mt-1 mb-1 text-[12px]" style={{ color: 'rgba(60,60,67,0.45)' }}>{ALL_PHOTOS.length} photos</div>
+              <div className="mt-6 mb-4 px-[28px] text-[13px] font-semibold" style={{ color: 'rgba(60,60,67,0.68)' }}>Albums</div>
+            </>
+          )}
+          {isMobile && <div className="mx-[6px] mt-3 mb-2 text-[9px] font-semibold uppercase tracking-wide" style={{ color: 'rgba(60,60,67,0.5)' }}>Albums</div>}
           {PROJECTS.map((proj) => (
             <button
               key={proj.id}
               onClick={() => setSelectedProject(proj.id)}
-              className="flex items-center gap-3 px-0 py-2 mx-[22px] rounded-lg text-[15px] font-medium transition-colors text-left"
+              className={`flex items-center ${isMobile ? 'gap-1.5 py-1 mx-[6px] text-[10px]' : 'gap-3 py-2 mx-[22px] text-[15px]'} px-0 rounded-lg font-medium transition-colors text-left`}
               style={{
                 background: selectedProject === proj.id ? 'rgba(0,0,0,0.045)' : 'transparent',
                 color: '#1d1d1f',
               }}
             >
-              <Folder size={21} className="shrink-0" strokeWidth={2} />
+              <Folder size={isMobile ? 13 : 21} className="shrink-0" strokeWidth={2} />
               <span className="truncate">{proj.title}</span>
-              <span className="ml-auto text-[12px] shrink-0" style={{ color: 'rgba(60,60,67,0.42)' }}>{proj.images.length}</span>
+              {!isMobile && <span className="ml-auto text-[12px] shrink-0" style={{ color: 'rgba(60,60,67,0.42)' }}>{proj.images.length}</span>}
             </button>
           ))}
         </div>
@@ -207,48 +216,45 @@ export function PhotosWindow() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
           <div
-            className="h-[86px] px-7 shrink-0 flex items-center gap-2 min-w-0"
-            style={{ background: '#ffffff' }}
+            className={`${isMobile ? 'flex items-end px-3 pb-2' : 'h-[86px] px-7 flex items-center'} shrink-0 gap-2 min-w-0`}
+            style={{ background: '#ffffff', paddingTop: isMobile ? 44 : undefined }}
           >
-            <span className="text-[23px] font-bold truncate min-w-0" style={{ color: 'rgba(0,0,0,0.7)' }}>
+            <span className={`${isMobile ? 'text-[13px]' : 'text-[23px]'} font-bold truncate min-w-0`} style={{ color: 'rgba(0,0,0,0.7)' }}>
               {currentProject ? currentProject.title : 'Bibliothèque'}
             </span>
-            <span className="text-[14px] ml-1 shrink-0" style={{ color: 'rgba(0,0,0,0.35)' }}>
-              · {filtered.length} photo{filtered.length > 1 ? 's' : ''}
+            <span className={`${isMobile ? 'text-[11px]' : 'text-[14px]'} ml-1 shrink-0`} style={{ color: 'rgba(0,0,0,0.35)' }}>
+              · {filtered.length}
             </span>
-            {currentProject && (
-              <span className="text-[11px] ml-auto shrink-0" style={{ color: 'rgba(0,0,0,0.3)' }}>
-                {currentProject.location} · {currentProject.year}
-              </span>
-            )}
-            <div className="ml-auto flex shrink-0 items-center gap-2" style={{ color: 'rgba(0,0,0,0.52)' }}>
+            <div className="ml-auto flex shrink-0 items-center gap-1.5" style={{ color: 'rgba(0,0,0,0.52)' }}>
               <button
                 type="button"
                 onClick={() => setClampedZoom((current) => current - 1)}
                 aria-label="Réduire la taille des photos"
-                className="grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-black/5 disabled:opacity-35"
+                className="grid h-6 w-6 place-items-center rounded-md transition-colors hover:bg-black/5 disabled:opacity-35"
                 disabled={zoomLevel === ZOOM_MIN}
               >
-                <Minus size={16} strokeWidth={2.2} />
+                <Minus size={13} strokeWidth={2.2} />
               </button>
-              <input
-                aria-label="Taille des photos"
-                type="range"
-                min={ZOOM_MIN}
-                max={ZOOM_MAX}
-                step={1}
-                value={zoomLevel}
-                onChange={(event) => setClampedZoom(Number(event.target.value))}
-                className="h-1 w-[92px] accent-[#007aff]"
-              />
+              {!isMobile && (
+                <input
+                  aria-label="Taille des photos"
+                  type="range"
+                  min={ZOOM_MIN}
+                  max={ZOOM_MAX}
+                  step={1}
+                  value={zoomLevel}
+                  onChange={(event) => setClampedZoom(Number(event.target.value))}
+                  className="h-1 w-[72px] accent-[#007aff]"
+                />
+              )}
               <button
                 type="button"
                 onClick={() => setClampedZoom((current) => current + 1)}
                 aria-label="Agrandir les photos"
-                className="grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-black/5 disabled:opacity-35"
+                className="grid h-6 w-6 place-items-center rounded-md transition-colors hover:bg-black/5 disabled:opacity-35"
                 disabled={zoomLevel === ZOOM_MAX}
               >
-                <Plus size={16} strokeWidth={2.2} />
+                <Plus size={13} strokeWidth={2.2} />
               </button>
             </div>
           </div>

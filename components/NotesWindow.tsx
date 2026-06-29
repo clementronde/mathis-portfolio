@@ -20,6 +20,14 @@ export function NotesWindow() {
   const [selected, setSelected] = useState<Note>(NOTES[0]);
   const [filter, setFilter] = useState<'all' | 'pro' | 'perso'>('all');
   const step = useScrollytellingStore((state) => state.step);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   const filtered = NOTES.filter((n) => filter === 'all' || n.category === filter);
 
@@ -49,9 +57,9 @@ export function NotesWindow() {
       <div className="flex h-full" style={{ background: '#ffffff', color: '#000000' }}>
         {/* Sidebar */}
         <div
-          className="w-[210px] shrink-0 flex flex-col overflow-hidden"
+          className={`${isMobile ? 'w-[110px]' : 'w-[210px]'} shrink-0 flex flex-col overflow-hidden`}
           style={{
-            paddingTop: 102,
+            paddingTop: isMobile ? 44 : 102,
             background: '#fbfbfb',
             borderTopLeftRadius: 24,
             borderBottomLeftRadius: 24,
@@ -75,23 +83,23 @@ export function NotesWindow() {
             ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5">
+          <div className={`flex-1 overflow-y-auto ${isMobile ? 'px-2' : 'px-5'}`}>
             {NOTE_FOLDERS.map((folder, index) => (
               <button
                 key={folder.label}
                 onClick={() => selectFilter(index < 3 ? 'pro' : 'perso')}
-                className="w-full h-10 flex items-center gap-3 text-left text-[14px] font-medium"
+                className={`w-full ${isMobile ? 'h-8 gap-1.5' : 'h-10 gap-3'} flex items-center text-left font-medium`}
               >
-                <FileText size={21} strokeWidth={1.6} />
-                <span className="min-w-0 flex-1 truncate">{folder.label}</span>
-                <span style={{ color: 'rgba(0,0,0,0.45)' }}>{folder.count}</span>
+                <FileText size={isMobile ? 13 : 21} strokeWidth={1.6} className="shrink-0" />
+                <span className={`min-w-0 flex-1 truncate ${isMobile ? 'text-[10px]' : 'text-[14px]'}`}>{folder.label}</span>
+                {!isMobile && <span style={{ color: 'rgba(0,0,0,0.45)' }}>{folder.count}</span>}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Note list */}
-        <div className="w-[230px] shrink-0 flex flex-col overflow-hidden" style={{ background: '#ffffff' }}>
+        {/* Note list — masquée sur mobile */}
+        {!isMobile && <div className="w-[230px] shrink-0 flex flex-col overflow-hidden" style={{ background: '#ffffff' }}>
           <div
             className="h-[72px] shrink-0 flex items-center px-7 text-[18px] font-bold"
             style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.7)' }}
@@ -114,7 +122,7 @@ export function NotesWindow() {
               </button>
             ))}
           </div>
-        </div>
+        </div>}
 
         {/* Note content */}
         <div
@@ -128,15 +136,15 @@ export function NotesWindow() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.15 }}
-              className="flex-1 overflow-y-auto px-8 py-8"
+              className={`flex-1 overflow-y-auto ${isMobile ? 'px-3 py-4' : 'px-8 py-8'}`}
             >
               {/* Header */}
-              <div className="mb-5">
-                <h2 className="text-[19px] font-semibold leading-tight" style={{ color: '#000000' }}>{selected.title}</h2>
+              <div className="mb-4">
+                <h2 className={`${isMobile ? 'text-[13px]' : 'text-[19px]'} font-semibold leading-tight`} style={{ color: '#000000' }}>{selected.title}</h2>
               </div>
 
               {/* Body */}
-              <div className="text-[14px] leading-8 whitespace-pre-line" style={{ color: 'rgba(0,0,0,0.62)' }}>
+              <div className={`${isMobile ? 'text-[11px] leading-5' : 'text-[14px] leading-8'} whitespace-pre-line`} style={{ color: 'rgba(0,0,0,0.62)' }}>
                 {selected.content}
               </div>
             </motion.div>

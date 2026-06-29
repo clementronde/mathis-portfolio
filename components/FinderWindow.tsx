@@ -163,6 +163,14 @@ export function FinderWindow() {
   );
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   useEffect(() => {
     const proj = findFinderProject(finderFolder);
@@ -208,9 +216,9 @@ export function FinderWindow() {
 
         {/* ── Sidebar ── */}
         <div
-          className="w-[210px] shrink-0 flex flex-col overflow-y-auto"
+          className={`${isMobile ? 'w-[110px]' : 'w-[210px]'} shrink-0 flex flex-col overflow-y-auto`}
           style={{
-            paddingTop: 100,
+            paddingTop: isMobile ? 44 : 100,
             paddingBottom: 24,
             background: '#fafafa',
             borderTopLeftRadius: 24,
@@ -221,15 +229,21 @@ export function FinderWindow() {
         >
           <button
             onClick={() => openSection('recents')}
-            className="flex items-center gap-3 px-0 py-2 text-[15px] font-medium rounded-lg text-left transition-colors"
-            style={getSidebarButtonStyle(activeSection === 'recents' && !selectedProject)}
+            className={`flex items-center ${isMobile ? 'gap-1.5 py-1 text-[10px]' : 'gap-3 py-2 text-[15px]'} px-0 font-medium rounded-lg text-left transition-colors`}
+            style={isMobile
+              ? { marginLeft: 6, marginRight: 6, width: 'calc(100% - 12px)', background: activeSection === 'recents' && !selectedProject ? 'rgba(0,0,0,0.045)' : 'transparent', color: '#1d1d1f' }
+              : getSidebarButtonStyle(activeSection === 'recents' && !selectedProject)
+            }
           >
-            <Clock size={22} strokeWidth={2} />
-            <span>Récents</span>
+            <Clock size={isMobile ? 13 : 22} strokeWidth={2} className="shrink-0" />
+            <span className="truncate">Récents</span>
           </button>
 
-          <div className="mt-7">
-            <p className="text-[12px] font-semibold px-[28px] mb-4" style={{ color: 'rgba(60,60,67,0.68)' }}>
+          <div className={isMobile ? 'mt-3' : 'mt-7'}>
+            <p
+              className={`${isMobile ? 'text-[9px] px-[8px] mb-2' : 'text-[12px] px-[28px] mb-4'} font-semibold uppercase tracking-wide`}
+              style={{ color: 'rgba(60,60,67,0.68)' }}
+            >
               Favoris
             </p>
             {SIDEBAR_ITEMS.map(({ id, label, icon: Icon }) => {
@@ -238,11 +252,14 @@ export function FinderWindow() {
                 <button
                   key={label}
                   onClick={() => openSection(id)}
-                  className="flex items-center gap-3 px-0 py-2 text-[15px] font-medium rounded-lg text-left transition-colors"
-                  style={getSidebarButtonStyle(active)}
+                  className={`flex items-center ${isMobile ? 'gap-1.5 py-1 text-[10px]' : 'gap-3 py-2 text-[15px]'} px-0 font-medium rounded-lg text-left transition-colors`}
+                  style={isMobile
+                    ? { marginLeft: 6, marginRight: 6, width: 'calc(100% - 12px)', background: active ? 'rgba(0,0,0,0.045)' : 'transparent', color: '#1d1d1f' }
+                    : getSidebarButtonStyle(active)
+                  }
                 >
-                  <Icon size={22} strokeWidth={2} />
-                  <span>{label}</span>
+                  <Icon size={isMobile ? 13 : 22} strokeWidth={2} className="shrink-0" />
+                  <span className="truncate">{label}</span>
                 </button>
               );
             })}
@@ -262,31 +279,31 @@ export function FinderWindow() {
 
           {/* Toolbar */}
           <div
-            className="flex items-center gap-5 px-7 h-[86px] shrink-0"
-            style={{ background: '#ffffff' }}
+            className={`flex ${isMobile ? 'items-end gap-2 px-3 pb-3' : 'items-center gap-5 px-7 h-[86px]'} shrink-0`}
+            style={{ background: '#ffffff', paddingTop: isMobile ? 44 : undefined }}
           >
             {selectedProject ? (
               <button
                 onClick={() => setSelectedProject(null)}
                 aria-label="Retour"
-                className="h-[50px] w-[42px] flex items-center justify-center rounded-l-full transition-colors"
+                className={`${isMobile ? 'h-[30px] w-[26px]' : 'h-[50px] w-[42px]'} flex items-center justify-center rounded-l-full transition-colors`}
                 style={{
                   color: 'rgba(0,0,0,0.65)',
                   background: 'rgba(255,255,255,0.82)',
                   boxShadow: '0 10px 26px rgba(0,0,0,0.08)',
                 }}
               >
-                <ChevronLeft size={30} strokeWidth={2.6} />
+                <ChevronLeft size={isMobile ? 16 : 30} strokeWidth={2.6} />
               </button>
             ) : (
-              <span className="text-[20px] font-bold" style={{ color: 'rgba(0,0,0,0.7)' }}>{title}</span>
+              <span className={`${isMobile ? 'text-[13px]' : 'text-[20px]'} font-bold`} style={{ color: 'rgba(0,0,0,0.7)' }}>{title}</span>
             )}
 
             {selectedProject && (
               <>
                 <button
                   aria-label="Suivant"
-                  className="h-[50px] w-[42px] -ml-5 flex items-center justify-center rounded-r-full transition-colors"
+                  className={`${isMobile ? 'h-[30px] w-[26px] -ml-2' : 'h-[50px] w-[42px] -ml-5'} flex items-center justify-center rounded-r-full transition-colors`}
                   style={{
                     color: 'rgba(0,0,0,0.65)',
                     background: 'rgba(255,255,255,0.82)',
@@ -294,9 +311,9 @@ export function FinderWindow() {
                     borderLeft: '1px solid rgba(0,0,0,0.06)',
                   }}
                 >
-                  <ChevronRight size={30} strokeWidth={2.6} />
+                  <ChevronRight size={isMobile ? 16 : 30} strokeWidth={2.6} />
                 </button>
-                <span className="text-[20px] font-bold truncate ml-1" style={{ color: 'rgba(0,0,0,0.7)' }}>
+                <span className={`${isMobile ? 'text-[13px]' : 'text-[20px]'} font-bold truncate ml-1`} style={{ color: 'rgba(0,0,0,0.7)' }}>
                   {selectedProject.title}
                 </span>
               </>
@@ -344,7 +361,7 @@ export function FinderWindow() {
                     </div>
                   </motion.button>
 
-                  <div className="mt-4 w-full max-w-[640px] flex justify-center gap-3 overflow-x-auto px-2 py-1">
+                  <div className={`${isMobile ? 'mt-2 gap-1.5' : 'mt-4 gap-3'} w-full max-w-[640px] flex justify-center overflow-x-auto px-2 py-1`}>
                     {selectedProject.images.map((img, i) => (
                       <button
                         key={img}
@@ -357,8 +374,8 @@ export function FinderWindow() {
                         <div
                           className="overflow-hidden"
                           style={{
-                            width: i === 3 ? 135 : 88,
-                            height: 72,
+                            width: isMobile ? (i === 3 ? 72 : 48) : (i === 3 ? 135 : 88),
+                            height: isMobile ? 40 : 72,
                             background: selectedProject.color,
                             boxShadow: activeImageIndex === i ? '0 0 0 2px rgba(0,0,0,0.18)' : 'none',
                           }}
@@ -384,34 +401,38 @@ export function FinderWindow() {
                   transition={{ duration: 0.15 }}
                   className="h-full flex"
                 >
-                  <div className="w-[285px] shrink-0 px-7 pt-6">
+                  <div className={`${isMobile ? 'w-full px-3 pt-2' : 'w-[285px] px-7 pt-6'} shrink-0`}>
                     {visibleProjects.map((project, index) => (
                       <button
                         key={project.id}
                         onClick={() => openProject(project)}
-                        className="w-full h-[54px] px-2 flex items-center gap-3 rounded-md text-left transition-colors"
+                        className={`w-full ${isMobile ? 'h-[38px] gap-2' : 'h-[54px] gap-3'} px-2 flex items-center rounded-md text-left transition-colors`}
                         style={{ background: index === 0 ? 'rgba(0,0,0,0.06)' : 'transparent' }}
                       >
-                        <FolderIcon coverImage={project.coverImage} color={project.color} size={34} />
-                        <span className="text-[15px] font-semibold truncate">{project.title}</span>
-                        <ChevronRight size={22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
+                        <FolderIcon coverImage={project.coverImage} color={project.color} size={isMobile ? 22 : 34} />
+                        <span className={`${isMobile ? 'text-[11px]' : 'text-[15px]'} font-semibold truncate`}>{project.title}</span>
+                        <ChevronRight size={isMobile ? 13 : 22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
                       </button>
                     ))}
                   </div>
-                  <div className="w-px h-full" style={{ background: 'rgba(0,0,0,0.08)' }} />
-                  <div className="flex-1 flex items-center justify-center px-10 pb-12">
-                    {visibleProjects[0] ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={encodeSrc(visibleProjects[0].coverImage)}
-                        alt=""
-                        className="max-w-[58%] max-h-[62%] object-contain"
-                        draggable={false}
-                      />
-                    ) : (
-                      <ProjectFolderGrid projects={visibleProjects} onOpen={openProject} />
-                    )}
-                  </div>
+                  {!isMobile && (
+                    <>
+                      <div className="w-px h-full" style={{ background: 'rgba(0,0,0,0.08)' }} />
+                      <div className="flex-1 flex items-center justify-center px-10 pb-12">
+                        {visibleProjects[0] ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={encodeSrc(visibleProjects[0].coverImage)}
+                            alt=""
+                            className="max-w-[58%] max-h-[62%] object-contain"
+                            draggable={false}
+                          />
+                        ) : (
+                          <ProjectFolderGrid projects={visibleProjects} onOpen={openProject} />
+                        )}
+                      </div>
+                    </>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

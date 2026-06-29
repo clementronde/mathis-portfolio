@@ -36,12 +36,6 @@ export const SCROLL_STEPS = [
   'maps-closed',
   'music',
   'music-closed',
-  'lightroom',
-  'lightroom-closed',
-  'photoshop',
-  'photoshop-closed',
-  'premiere',
-  'premiere-closed',
 ] as const;
 
 export type ScrollStep = typeof SCROLL_STEPS[number];
@@ -73,9 +67,6 @@ const STEP_APP_IDS: Partial<Record<ScrollStep, AppId>> = {
   'photos-library-8': 'photos',
   maps: 'maps',
   music: 'music',
-  lightroom: 'lightroom',
-  photoshop: 'photoshop',
-  premiere: 'premiere',
 };
 
 const STEP_FINDER_FOLDERS: Partial<Record<ScrollStep, string | null>> = {
@@ -117,9 +108,6 @@ const CLOSED_STEP_BY_APP: Record<AppId, ScrollStep> = {
   photos: 'photos-closed',
   maps: 'maps-closed',
   music: 'music-closed',
-  lightroom: 'lightroom-closed',
-  photoshop: 'photoshop-closed',
-  premiere: 'premiere-closed',
 };
 
 const OPEN_STEP_BY_APP: Record<AppId, ScrollStep> = {
@@ -129,9 +117,6 @@ const OPEN_STEP_BY_APP: Record<AppId, ScrollStep> = {
   photos: 'photos',
   maps: 'maps',
   music: 'music',
-  lightroom: 'lightroom',
-  photoshop: 'photoshop',
-  premiere: 'premiere',
 };
 
 interface ScrollytellingStore {

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2 } from 'lucide-react';
 import { Window } from './Window';
 import { AppIcon } from './icons/AppIcons';
@@ -18,6 +18,15 @@ export function MusicWindow() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(35);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   const current = PLAYLIST[currentIndex];
 
@@ -38,76 +47,102 @@ export function MusicWindow() {
       chrome="frameless"
       defaultSize={{ width: 580, height: 480 }}
     >
-      <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
-        {/* Left — now playing */}
-        <div
-          className="w-52 shrink-0 flex flex-col items-center justify-center p-6 gap-4"
-          style={{
-            background: '#fbfbfb',
-            borderTopLeftRadius: 24,
-            borderBottomLeftRadius: 24,
-            boxShadow: '22px 0 42px -34px rgba(0,0,0,0.72)',
-            zIndex: 2,
-          }}
-        >
-          {/* Album art */}
+      <div className={`${isMobile ? 'flex-col' : ''} flex h-full`} style={{ background: '#ffffff', color: '#1d1d1f' }}>
+        {/* Player panel — compact horizontal strip on mobile, full panel on desktop */}
+        {isMobile ? (
           <div
-            className="w-36 h-36 rounded-2xl shadow-lg"
+            className="w-full shrink-0 flex items-center gap-3 px-4 py-3"
             style={{
-              background: current.color,
-              backgroundImage: `linear-gradient(135deg, ${current.color}, #333)`,
-              boxShadow: `0 12px 32px rgba(0,0,0,0.18)`,
+              background: '#fbfbfb',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+              zIndex: 2,
+              paddingTop: 44,
             }}
-          />
-
-          <div className="text-center">
-            <p className="text-[14px] font-semibold leading-tight" style={{ color: '#1d1d1f' }}>{current.title}</p>
-            <p className="text-[12px] mt-1" style={{ color: 'rgba(0,0,0,0.45)' }}>{current.artist}</p>
-          </div>
-
-          {/* Progress bar */}
-          <div className="w-full space-y-1">
-            <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.1)' }}>
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${progress}%`, background: '#FC3C44' }}
-              />
-            </div>
-            <div className="flex justify-between text-[10px]" style={{ color: 'rgba(0,0,0,0.35)' }}>
-              <span>1:{String(Math.floor(progress * 0.6)).padStart(2, '0')}</span>
-              <span>{current.duration}</span>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center gap-4">
-            <button onClick={prev} aria-label="Précédent" className="transition-colors" style={{ color: 'rgba(0,0,0,0.45)' }}>
-              <SkipBack size={18} />
-            </button>
-            <button
-              onClick={() => setPlaying((p) => !p)}
-              aria-label={playing ? 'Pause' : 'Lecture'}
-              className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-105 transition-transform"
-              style={{ background: '#FC3C44', color: '#fff' }}
-            >
-              {playing ? <Pause size={16} fill="white" /> : <Play size={16} fill="white" className="ml-0.5" />}
-            </button>
-            <button onClick={next} aria-label="Suivant" className="transition-colors" style={{ color: 'rgba(0,0,0,0.45)' }}>
-              <SkipForward size={18} />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3" style={{ color: 'rgba(0,0,0,0.3)' }}>
-            <Shuffle size={13} />
-            <div className="flex items-center gap-1">
-              <Volume2 size={13} />
-              <div className="w-16 h-0.5 rounded-full" style={{ background: 'rgba(0,0,0,0.15)' }}>
-                <div className="w-3/4 h-full rounded-full" style={{ background: 'rgba(0,0,0,0.4)' }} />
+          >
+            <div
+              className="w-12 h-12 rounded-xl shrink-0"
+              style={{ background: current.color, backgroundImage: `linear-gradient(135deg, ${current.color}, #333)` }}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold truncate" style={{ color: '#1d1d1f' }}>{current.title}</p>
+              <p className="text-[11px]" style={{ color: 'rgba(0,0,0,0.45)' }}>{current.artist}</p>
+              <div className="w-full h-0.5 rounded-full mt-1.5 overflow-hidden" style={{ background: 'rgba(0,0,0,0.1)' }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: '#FC3C44' }} />
               </div>
             </div>
-            <Repeat size={13} />
+            <div className="flex items-center gap-2 shrink-0">
+              <button onClick={prev} aria-label="Précédent" style={{ color: 'rgba(0,0,0,0.45)' }}>
+                <SkipBack size={16} />
+              </button>
+              <button
+                onClick={() => setPlaying((p) => !p)}
+                aria-label={playing ? 'Pause' : 'Lecture'}
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{ background: '#FC3C44', color: '#fff' }}
+              >
+                {playing ? <Pause size={13} fill="white" /> : <Play size={13} fill="white" className="ml-0.5" />}
+              </button>
+              <button onClick={next} aria-label="Suivant" style={{ color: 'rgba(0,0,0,0.45)' }}>
+                <SkipForward size={16} />
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div
+            className="w-52 shrink-0 flex flex-col items-center justify-center p-6 gap-4"
+            style={{
+              background: '#fbfbfb',
+              borderTopLeftRadius: 24,
+              borderBottomLeftRadius: 24,
+              boxShadow: '22px 0 42px -34px rgba(0,0,0,0.72)',
+              zIndex: 2,
+            }}
+          >
+            <div
+              className="w-36 h-36 rounded-2xl shadow-lg"
+              style={{ background: current.color, backgroundImage: `linear-gradient(135deg, ${current.color}, #333)`, boxShadow: `0 12px 32px rgba(0,0,0,0.18)` }}
+            />
+            <div className="text-center">
+              <p className="text-[14px] font-semibold leading-tight" style={{ color: '#1d1d1f' }}>{current.title}</p>
+              <p className="text-[12px] mt-1" style={{ color: 'rgba(0,0,0,0.45)' }}>{current.artist}</p>
+            </div>
+            <div className="w-full space-y-1">
+              <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.1)' }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: '#FC3C44' }} />
+              </div>
+              <div className="flex justify-between text-[10px]" style={{ color: 'rgba(0,0,0,0.35)' }}>
+                <span>1:{String(Math.floor(progress * 0.6)).padStart(2, '0')}</span>
+                <span>{current.duration}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <button onClick={prev} aria-label="Précédent" className="transition-colors" style={{ color: 'rgba(0,0,0,0.45)' }}>
+                <SkipBack size={18} />
+              </button>
+              <button
+                onClick={() => setPlaying((p) => !p)}
+                aria-label={playing ? 'Pause' : 'Lecture'}
+                className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+                style={{ background: '#FC3C44', color: '#fff' }}
+              >
+                {playing ? <Pause size={16} fill="white" /> : <Play size={16} fill="white" className="ml-0.5" />}
+              </button>
+              <button onClick={next} aria-label="Suivant" className="transition-colors" style={{ color: 'rgba(0,0,0,0.45)' }}>
+                <SkipForward size={18} />
+              </button>
+            </div>
+            <div className="flex items-center gap-3" style={{ color: 'rgba(0,0,0,0.3)' }}>
+              <Shuffle size={13} />
+              <div className="flex items-center gap-1">
+                <Volume2 size={13} />
+                <div className="w-16 h-0.5 rounded-full" style={{ background: 'rgba(0,0,0,0.15)' }}>
+                  <div className="w-3/4 h-full rounded-full" style={{ background: 'rgba(0,0,0,0.4)' }} />
+                </div>
+              </div>
+              <Repeat size={13} />
+            </div>
+          </div>
+        )}
 
         {/* Right — playlist */}
         <div className="flex-1 flex flex-col overflow-hidden">

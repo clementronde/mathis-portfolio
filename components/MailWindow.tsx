@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, Paperclip } from 'lucide-react';
 import { Window } from './Window';
 import { AppIcon } from './icons/AppIcons';
@@ -10,6 +10,15 @@ export function MailWindow() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   function handleSend() {
     if (!subject.trim() || !message.trim()) return;
@@ -30,7 +39,7 @@ export function MailWindow() {
       <div className="flex flex-col h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
         {/* Mail toolbar */}
         <div
-          className="flex items-center gap-2 pl-[150px] pr-5 h-[72px] shrink-0"
+          className={`flex items-center gap-2 ${isMobile ? 'pl-[90px]' : 'pl-[150px]'} pr-5 h-[72px] shrink-0`}
           style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', background: '#ffffff' }}
         >
           <span className="text-[12px]" style={{ color: 'rgba(0,0,0,0.35)' }}>Brouillon enregistré</span>

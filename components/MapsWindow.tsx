@@ -163,6 +163,15 @@ export function MapsWindow() {
   const [selectedLocationId, setSelectedLocationId] = useState(locations.find((location) => location.label === 'Paris')?.id ?? null);
   const [lightbox, setLightbox] = useState<{ locationId: string; index: number } | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   const selectedLocation = locations.find((location) => location.id === selectedLocationId);
   const lightboxLocation = locations.find((location) => location.id === lightbox?.locationId);
@@ -269,7 +278,7 @@ export function MapsWindow() {
     >
       <div className="flex flex-col h-full" style={{ background: '#f7f5ef', color: '#1d1d1f' }}>
         <div
-          className="flex items-center gap-2 pl-[150px] pr-5 h-[64px] shrink-0"
+          className={`flex items-center gap-2 ${isMobile ? 'pl-[90px]' : 'pl-[150px]'} pr-5 h-[64px] shrink-0`}
           style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', background: 'rgba(255,255,255,0.94)' }}
         >
           <MapPin size={14} className="text-red-500 shrink-0" />
@@ -286,7 +295,7 @@ export function MapsWindow() {
 
           {selectedLocation && (
             <div
-              className="absolute left-4 bottom-4 max-w-[280px] rounded-lg px-3 py-2 z-[500]"
+              className={`absolute left-4 bottom-4 ${isMobile ? 'max-w-[180px]' : 'max-w-[280px]'} rounded-lg px-3 py-2 z-[500]`}
               style={{
                 background: 'rgba(255,255,255,0.9)',
                 color: '#1d1d1f',

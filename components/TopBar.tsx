@@ -27,7 +27,7 @@ export function TopBar() {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-4 h-7 text-white text-[13px] select-none"
+      className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-3 sm:px-4 h-7 text-white text-[12px] sm:text-[13px] select-none"
       style={{
         background: 'rgba(0,0,0,0.45)',
         backdropFilter: 'blur(20px)',
@@ -35,19 +35,19 @@ export function TopBar() {
       }}
     >
       {/* Left — Apple menu style */}
-      <div className="flex items-center gap-4">
-        <span className="font-semibold text-[15px] leading-none">⌘</span>
+      <div className="flex items-center gap-3 sm:gap-4">
+        <span className="font-semibold text-[14px] sm:text-[15px] leading-none">⌘</span>
         <span className="font-medium opacity-90">Portfolio</span>
         <span className="opacity-60 hidden sm:inline">Fichier</span>
-        <span className="opacity-60 hidden sm:inline">Présentation</span>
-        <span className="opacity-60 hidden md:inline">Aller</span>
+        <span className="opacity-60 hidden md:inline">Présentation</span>
+        <span className="opacity-60 hidden lg:inline">Aller</span>
       </div>
 
       {/* Right — status icons */}
-      <div className="flex items-center gap-3 opacity-90">
-        <Wifi size={13} aria-label="Wifi" />
-        <Battery size={13} aria-label="Batterie" />
-        <Search size={13} aria-label="Spotlight" />
+      <div className="flex items-center gap-2 sm:gap-3 opacity-90">
+        <Wifi size={12} aria-label="Wifi" className="hidden xs:block" />
+        <Battery size={12} aria-label="Batterie" />
+        <Search size={12} aria-label="Spotlight" className="hidden sm:block" />
         <span className="hidden sm:inline opacity-80">{date}</span>
         <span className="font-medium">{time}</span>
       </div>
