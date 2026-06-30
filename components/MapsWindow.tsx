@@ -137,7 +137,7 @@ function markerHtml(location: MapLocation, active: boolean) {
               box-shadow: ${active ? '0 12px 30px rgba(0,0,0,0.34)' : '0 8px 18px rgba(0,0,0,0.24)'};
             "
           >
-            <img src="${encodeSrc(photo.src)}" alt="${photo.projectTitle}" draggable="false" />
+            <img src="${encodeSrc(photo.src)}" alt="${photo.projectTitle}" draggable="false" loading="lazy" />
           </span>
         </button>
       `;
@@ -319,7 +319,7 @@ export function MapsWindow() {
                     aria-label={`${photo.projectTitle} - ${photo.locationLabel}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={encodeSrc(photo.src)} alt={photo.projectTitle} className="w-full h-full object-contain" />
+                    <img src={encodeSrc(photo.src)} alt={photo.projectTitle} loading="lazy" decoding="async" className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>

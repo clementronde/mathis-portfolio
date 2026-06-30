@@ -97,7 +97,7 @@ export function DesktopItem({
           width,
           aspectRatio,
           background: imageColor,
-          backgroundImage: imageSrc && type !== 'map' ? `url("${encodeSrc(imageSrc)}")` : undefined,
+          backgroundImage: imageSrc && type !== 'map' && !imageSrc.endsWith('.gif') ? `url("${encodeSrc(imageSrc)}")` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           borderRadius: 0,
@@ -107,6 +107,25 @@ export function DesktopItem({
         }}
         className="transition-shadow"
       >
+        {imageSrc && /\.(mp4|webm)$/i.test(imageSrc) && (
+          <video
+            src={encodeSrc(imageSrc)}
+            className="absolute inset-0 w-full h-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        )}
+        {imageSrc && imageSrc.endsWith('.gif') && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={encodeSrc(imageSrc)}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            draggable={false}
+          />
+        )}
         {type === 'map' && (
           <div className="absolute inset-0" style={{ background: '#d9f0dc' }}>
             <div

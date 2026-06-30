@@ -32,7 +32,7 @@ export function Dock() {
 
   return (
     <div
-      className="fixed right-3 top-1/2 -translate-y-1/2 z-[90] px-2 py-2.5 flex flex-col items-center gap-1 rounded-2xl lg:right-auto lg:top-auto lg:bottom-4 lg:left-1/2 lg:-translate-x-1/2 lg:translate-y-0 lg:flex-row lg:gap-2 lg:px-3 lg:py-2"
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[90] px-3 py-2 flex flex-row items-center gap-2 rounded-2xl"
       style={panelStyle}
       role="toolbar"
       aria-label="Dock d'applications"
@@ -46,20 +46,20 @@ export function Dock() {
             aria-label={`Ouvrir ${app.label}`}
             title={app.label}
             className="relative flex items-center justify-center group outline-none"
-            whileHover={isSmall ? { x: -8, scale: 1.18 } : { y: -8, scale: 1.18 }}
+            whileHover={{ y: -8, scale: 1.18 }}
             whileTap={{ scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
           >
             <AppIcon id={app.id as AppId} size={iconSize} />
 
             <span
-              className="absolute -left-2 w-1 h-1 rounded-full bg-white/75 transition-opacity lg:left-1/2 lg:-bottom-1.5 lg:-translate-x-1/2"
+              className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-1 h-1 rounded-full bg-white/75 transition-opacity"
               style={{ opacity: isOpen ? 1 : 0 }}
               aria-hidden="true"
             />
 
             <span
-              className="absolute right-full mr-3 bg-black/80 text-white text-[11px] px-2 py-1 rounded-md lg:right-auto lg:bottom-full lg:mb-3 lg:mr-0
+              className="absolute bottom-full mb-3 bg-black/80 text-white text-[11px] px-2 py-1 rounded-md
                          whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity"
             >
               {app.label}

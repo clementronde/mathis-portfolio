@@ -285,11 +285,19 @@ export function PhotosWindow() {
                         width: '100%',
                         aspectRatio: idx % 5 === 0 ? '1/1' : idx % 5 === 1 ? '3/4' : idx % 5 === 2 ? '4/3' : idx % 5 === 3 ? '2/3' : '4/5',
                         background: photo.color,
-                        backgroundImage: `url("${encodeSrc(photo.src)}")`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
+                        position: 'relative',
+                        overflow: 'hidden',
                       }}
-                    />
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={encodeSrc(photo.src)}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
                   </motion.button>
                 ))}
               </motion.div>

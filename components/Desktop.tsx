@@ -68,7 +68,7 @@ const DESKTOP_ITEMS = [
   {
     id: 'couscous-item',
     label: 'Couscous',
-    imageSrc: '/images/desktop/videocouscous.gif',
+    imageSrc: '/images/desktop/videocouscous.mp4',
     imageColor: '#2e1a00',
     rotate: 0,
     style: { right: '7%', top: '22%' },
@@ -110,7 +110,6 @@ const STATIC_PRELOAD_IMAGES = [
   '/images/desktop/wallpaperverouillage.png',
   '/images/desktop/Ellipsemathis.png',
   '/images/desktop/Couscous.png',
-  '/images/desktop/videocouscous.gif',
   '/images/MSA.svg',
   '/images/icons/Findericon.png',
   '/images/icons/Mailicon.png',

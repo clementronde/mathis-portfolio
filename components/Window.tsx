@@ -38,13 +38,14 @@ const RESIZE_HANDLES = [
 ] as const;
 
 const TOPBAR_H = 28;
-const DOCK_SIDE_W = 68;
+const DOCK_BOTTOM_H = 80; // dock en bas: bottom-4 + py-2 + icône + marge
+// Largeur max des fenêtres sur mobile = largeur du dock (8 icônes × 36px + 7 gaps × 8px + 2 × 12px padding)
+const MOBILE_MAX_W = 368;
 
 function isMobileViewport() {
   return typeof window !== 'undefined' && window.innerWidth < 768;
 }
 
-const MOBILE_BOTTOM_GAP = 32;
 const VIEWPORT_GAP = 16;
 
 function fitAspectSize(size: { width: number; height: number }, aspectRatio?: number) {
@@ -60,25 +61,26 @@ function responsiveSize(base: { width: number; height: number }, aspectRatio?: n
   if (typeof window === 'undefined') return base;
   const mobile = isMobileViewport();
   const GAP = mobile ? 0 : VIEWPORT_GAP;
-  const maxHeight = window.innerHeight - TOPBAR_H - (mobile ? MOBILE_BOTTOM_GAP : GAP * 2);
+  const maxW = mobile ? Math.min(MOBILE_MAX_W, window.innerWidth) : window.innerWidth - GAP * 2;
+  const maxHeight = window.innerHeight - TOPBAR_H - DOCK_BOTTOM_H - (mobile ? 0 : GAP);
   return fitAspectSize({
-    width: Math.min(base.width, window.innerWidth - DOCK_SIDE_W - GAP * 2),
+    width: Math.min(base.width, maxW),
     height: Math.min(base.height, maxHeight),
   }, aspectRatio);
 }
 
 function centeredPos(w: number, h: number) {
   if (typeof window === 'undefined') return { x: 80, y: 60 };
+  const availableHeight = window.innerHeight - TOPBAR_H - DOCK_BOTTOM_H;
   if (isMobileViewport()) {
-    const availableHeight = window.innerHeight - TOPBAR_H - MOBILE_BOTTOM_GAP;
     return {
-      x: 0,
+      x: Math.round((window.innerWidth - w) / 2),
       y: Math.max(TOPBAR_H, TOPBAR_H + Math.round((availableHeight - h) / 2)),
     };
   }
   return {
-    x: Math.max(0, Math.round((window.innerWidth - DOCK_SIDE_W - w) / 2)),
-    y: Math.max(TOPBAR_H, Math.round((window.innerHeight - h) / 2)),
+    x: Math.max(0, Math.round((window.innerWidth - w) / 2)),
+    y: Math.max(TOPBAR_H, Math.round((availableHeight - h) / 2) + TOPBAR_H),
   };
 }
 
@@ -179,8 +181,8 @@ export function Window({
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       // Keep at least 120px of the window visible on each axis
-      const clampedX = Math.max(-(size.width - 120), Math.min(vw - DOCK_SIDE_W - 120, me.clientX - startX));
-      const clampedY = Math.max(TOPBAR_H, Math.min(vh - 44, me.clientY - startY));
+      const clampedX = Math.max(-(size.width - 120), Math.min(vw - 120, me.clientX - startX));
+      const clampedY = Math.max(TOPBAR_H, Math.min(vh - DOCK_BOTTOM_H - 44, me.clientY - startY));
       x.set(clampedX);
       y.set(clampedY);
     };
@@ -275,15 +277,14 @@ export function Window({
 
   // ── Maximize ─────────────────────────────────────────────────────────────
   function toggleMaximize() {
-    const dockW = isMobileViewport() ? 0 : DOCK_SIDE_W;
     if (!isMaximized) {
       savedPos.current = { x: x.get(), y: y.get() };
       savedSize.current = { ...size };
       fmAnimate(x, 0, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
       fmAnimate(y, TOPBAR_H, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
       setSize(fitAspectSize({
-        width: typeof window !== 'undefined' ? window.innerWidth - dockW : 1440,
-        height: typeof window !== 'undefined' ? window.innerHeight - TOPBAR_H : 900,
+        width: typeof window !== 'undefined' ? window.innerWidth : 1440,
+        height: typeof window !== 'undefined' ? window.innerHeight - TOPBAR_H - DOCK_BOTTOM_H : 900,
       }, fixedAspectRatio));
     } else {
       fmAnimate(x, savedPos.current.x, { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] });
