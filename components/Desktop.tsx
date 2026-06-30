@@ -125,6 +125,7 @@ const STATIC_PRELOAD_IMAGES = [
   '/Photoshop/Photoshopbg.png',
   '/Photoshop/imagephotoshop.png',
   '/premiere/Premierebg.png',
+  '/images/premiereprobgmobile.png',
 ] as const;
 
 const SITE_PRELOAD_IMAGES = Array.from(
