@@ -45,4 +45,5 @@ next-env.d.ts
 *.mp4
 *.mov
 *.gif
+!public/images/desktop/202606302120 (1).mp4
 !public/images/desktop/videocouscous.mp4

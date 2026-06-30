@@ -56,7 +56,7 @@ const DESKTOP_ITEMS = [
   {
     id: 'family-item',
     label: 'Family',
-    imageSrc: '/images/projects/25-12-23 NOEL_AYME/MSA00148.avif',
+    imageSrc: '/images/desktop/202606302120 (1).mp4',
     imageColor: '#2e1208',
     rotate: 0,
     style: { right: '12%', top: '6%' },
