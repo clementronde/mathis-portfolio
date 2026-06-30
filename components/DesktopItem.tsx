@@ -97,7 +97,7 @@ export function DesktopItem({
           width,
           aspectRatio,
           background: imageColor,
-          backgroundImage: imageSrc && type !== 'map' && !imageSrc.endsWith('.gif') ? `url("${encodeSrc(imageSrc)}")` : undefined,
+          backgroundImage: imageSrc && type !== 'map' && !/\.(gif|mp4|webm)$/i.test(imageSrc) ? `url("${encodeSrc(imageSrc)}")` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           borderRadius: 0,
