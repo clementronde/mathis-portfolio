@@ -20,16 +20,19 @@ export const NOTES: Note[] = [
   {
     id: 'qui-je-suis',
     title: 'Qui je suis ?',
-    listTitle: 'Creative Producer',
     category: 'about',
-    date: 'Heaven Paris',
-    details: [
-      { label: 'Société', value: 'Heaven' },
-      { label: 'Lieu', value: 'Paris' },
-      { label: 'Période', value: 'Septembre 2024 - Septembre 2026' },
-      { label: "Type d'emploi", value: 'Alternance' },
-      { label: 'Description', value: '....' },
-    ],
+    date: 'Mathis Straebler',
+    details: [],
+    content: `Mon plus grand bonheur ? Figer l'éphémère pour le transformer en souvenirs pour la vie."
+
+Je m'appelle Mathis. Pour moi, la photographie est bien plus qu'un métier : c'est le prolongement de mon regard.
+J'adore par-dessus tout capturer des instants de vie authentiques et spontanés. Ce qui m'anime au quotidien, c'est cette magie de pouvoir arrêter le temps pour offrir des moments précieux, gravés pour toute la vie.
+
+Je conçois également l'image comme un puissant moyen de communication. C'est pourquoi j'aime mettre mon œil au service des marques, en créant des photographies publicitaires qui font passer un message fort.
+
+Mais au-delà de la communication, la photographie reste mon mode d'expression privilégié. C'est un art avec lequel j'adore jouer, expérimenter et composer pour traduire ma vision du monde.
+
+Bienvenue dans mon univers !`,
   },
   {
     id: 'creative-producer',

@@ -61,10 +61,13 @@ export function LockScreen({ canUnlock, loadedImages, onUnlock, totalImages }: L
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       >
         <div
-          className="font-thin leading-none tracking-tight"
+          className="font-light leading-none"
           style={{
             fontSize: 'clamp(72px, 20vw, 160px)',
             fontVariantNumeric: 'tabular-nums',
+            fontStretch: 'expanded',
+            letterSpacing: 0,
+            transform: 'scaleX(1.08)',
             textShadow: '0 2px 60px rgba(0,0,0,0.25)',
           }}
         >
