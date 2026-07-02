@@ -13,6 +13,10 @@ export type AppId =
 
 export type RecentItemType = 'project' | 'note';
 
+// Finder "folder" ids that point at a curated section view rather than a single project.
+export const FINDER_SECTION_IDS = ['recents', 'desktop', 'documents', 'social-media', 'photos', 'videos'] as const;
+export type FinderSectionId = (typeof FINDER_SECTION_IDS)[number];
+
 export interface RecentItem {
   id: string;
   type: RecentItemType;
@@ -57,7 +61,7 @@ export const useWindowStore = create<WindowStore>((set) => ({
         : [...state.openWindows, id],
       activeWindow: id,
       finderFolder: folder !== undefined ? folder : state.finderFolder,
-      recentItems: id === 'finder' && folder
+      recentItems: id === 'finder' && folder && !FINDER_SECTION_IDS.includes(folder as FinderSectionId)
         ? addRecentItem(state.recentItems, { type: 'project', itemId: folder })
         : state.recentItems,
     })),

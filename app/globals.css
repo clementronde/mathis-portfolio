@@ -61,6 +61,28 @@ html, body {
   -webkit-user-select: none;
 }
 
+/* Slow blink for attention-drawing desktop items (e.g. "Derniers Projets") */
+@keyframes desktop-item-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.desktop-item-blink {
+  animation: desktop-item-blink 2.6s ease-in-out infinite;
+}
+
+/* macOS-style "selected" look on hover — rectangle around the icon,
+   blue rectangle around the label, like a cmd+A file selection */
+[data-finder-select='true']:hover .di-icon {
+  outline: 1px solid rgba(255, 255, 255, 0.55);
+  outline-offset: 4px;
+  border-radius: 6px;
+  background-color: rgba(120, 170, 255, 0.12);
+}
+[data-finder-select='true']:hover .di-label {
+  background: #0a5fff !important;
+  color: #fff;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100%;

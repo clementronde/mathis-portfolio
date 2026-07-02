@@ -6,7 +6,8 @@ import { Window } from './Window';
 import { Lightbox } from './Lightbox';
 import { PROJECTS, type Project } from '@/data/projects';
 import { NOTES, type Note } from '@/data/notes';
-import { useWindowStore, type RecentItem } from '@/store/useWindowStore';
+import { DESKTOP_ITEMS, type DesktopItemConfig } from '@/data/desktopItems';
+import { useWindowStore, FINDER_SECTION_IDS, type RecentItem, type FinderSectionId } from '@/store/useWindowStore';
 import { AppIcon } from './icons/AppIcons';
 import { encodeSrc } from '@/utils/path';
 
@@ -25,29 +26,85 @@ function FolderIcon({ size = 72 }: { coverImage?: string; color?: string; size?:
   );
 }
 
+/* Thumbnail for an item actually sitting on the desktop (photo/video/folder icon) */
+function DesktopItemThumb({ item, size = 72 }: { item: DesktopItemConfig; size?: number }) {
+  const isVideo = /\.(mp4|webm)$/i.test(item.imageSrc);
+  const isFolderPng = item.type === 'folder' && item.imageColor === 'transparent';
+
+  return (
+    <div
+      className="overflow-hidden shrink-0"
+      style={{
+        width: size,
+        height: size,
+        background: isFolderPng ? 'transparent' : item.imageColor,
+        borderRadius: 6,
+        position: 'relative',
+      }}
+    >
+      {isVideo ? (
+        <video
+          src={encodeSrc(item.imageSrc)}
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={encodeSrc(item.imageSrc)}
+          alt=""
+          className="absolute inset-0 w-full h-full"
+          style={{ objectFit: isFolderPng ? 'contain' : 'cover' }}
+          draggable={false}
+        />
+      )}
+    </div>
+  );
+}
+
+function getDesktopItemFolder(item: DesktopItemConfig): string | undefined {
+  return item.action.type === 'finder' ? (item.action as { folder?: string }).folder : undefined;
+}
+
 const FINDER_PROJECT_IDS = ['otacos-lolla', 'tbs-sete'];
 const FINDER_PROJECTS = PROJECTS.filter((project) => FINDER_PROJECT_IDS.includes(project.id));
-const DESKTOP_PROJECT_IDS = ['noclout', 'shoot-les-rats', 'mariage-he', 'lisboa', 'berlin'];
-const DESKTOP_PROJECTS = PROJECTS.filter((project) => DESKTOP_PROJECT_IDS.includes(project.id));
+// Any desktop icon whose click action points at a real project (not a Finder section) lives "on the Desktop".
+const DESKTOP_ITEM_PROJECT_IDS = DESKTOP_ITEMS
+  .map(getDesktopItemFolder)
+  .filter((folder): folder is string => !!folder && !FINDER_SECTION_IDS.includes(folder as FinderSectionId));
+const DESKTOP_PROJECTS = PROJECTS.filter((project) => DESKTOP_ITEM_PROJECT_IDS.includes(project.id));
 
-type FinderSection = 'recents' | 'desktop' | 'documents';
+type FinderSection = FinderSectionId;
 
 const SIDEBAR_ITEMS = [
   { id: 'desktop', label: 'Bureau', icon: Monitor },
-  { id: 'documents', label: 'Documents', icon: FileText },
+  { id: 'documents', label: 'Derniers Projets', icon: FileText },
 ] satisfies { id: FinderSection; label: string; icon: typeof Monitor }[];
 
 const SECTION_PROJECTS: Record<FinderSection, Project[]> = {
   recents: FINDER_PROJECTS,
   desktop: DESKTOP_PROJECTS,
   documents: FINDER_PROJECTS,
+  'social-media': [],
+  photos: [],
+  videos: [],
 };
 
 const SECTION_TITLES: Record<FinderSection, string> = {
   recents: 'Récents',
   desktop: 'Bureau',
-  documents: 'Documents',
+  documents: 'Derniers Projets',
+  'social-media': 'Social Média',
+  photos: 'Photos',
+  videos: 'Videos',
 };
+
+function isFinderSection(id: string): id is FinderSection {
+  return (FINDER_SECTION_IDS as readonly string[]).includes(id);
+}
 
 const PROJECT_SECTION_BY_ID = new Map<string, FinderSection>([
   ...FINDER_PROJECTS.map((project) => [project.id, 'documents'] as const),
@@ -236,10 +293,14 @@ export function FinderWindow() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(
     () => findFinderProject(finderFolder)
   );
-  const [activeSection, setActiveSection] = useState<FinderSection>(
-    () => getProjectSection(findFinderProject(finderFolder)) ?? 'documents'
-  );
+  const [activeSection, setActiveSection] = useState<FinderSection>(() => {
+    const proj = findFinderProject(finderFolder);
+    if (proj) return getProjectSection(proj) ?? 'documents';
+    if (finderFolder && isFinderSection(finderFolder)) return finderFolder;
+    return 'documents';
+  });
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [desktopItemLightboxSrc, setDesktopItemLightboxSrc] = useState<string | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -260,6 +321,10 @@ export function FinderWindow() {
       setSelectedProject(null);
       setActiveSection('documents');
       setActiveImageIndex(0);
+    } else if (isFinderSection(finderFolder)) {
+      setSelectedProject(null);
+      setActiveSection(finderFolder);
+      setActiveImageIndex(0);
     }
   }, [finderFolder]);
 
@@ -274,6 +339,26 @@ export function FinderWindow() {
     setActiveSection(section);
     setSelectedProject(null);
     setActiveImageIndex(0);
+  }
+
+  function openDesktopItem(item: DesktopItemConfig) {
+    if (item.action.type === 'lightbox') {
+      setDesktopItemLightboxSrc(item.imageSrc);
+      return;
+    }
+
+    const folder = getDesktopItemFolder(item);
+    if (!folder) return;
+
+    const proj = findFinderProject(folder);
+    if (proj) {
+      openProject(proj);
+      return;
+    }
+
+    if (isFinderSection(folder)) {
+      openSection(folder);
+    }
   }
 
   function openRecentItem(item: ResolvedRecentItem) {
@@ -499,6 +584,23 @@ export function FinderWindow() {
                         isMobile={isMobile}
                         onOpen={openRecentItem}
                       />
+                    ) : activeSection === 'desktop' ? (
+                      DESKTOP_ITEMS.map((item, index) => (
+                        <button
+                          key={item.id}
+                          onClick={() => openDesktopItem(item)}
+                          className={`w-full ${isMobile ? 'h-[38px] gap-2' : 'h-[54px] gap-3'} px-2 flex items-center rounded-md text-left transition-colors`}
+                          style={{ background: index === 0 ? 'rgba(0,0,0,0.06)' : 'transparent' }}
+                        >
+                          <DesktopItemThumb item={item} size={isMobile ? 22 : 34} />
+                          <span className={`${isMobile ? 'text-[11px]' : 'text-[15px]'} font-semibold truncate`}>{item.label}</span>
+                          <ChevronRight size={isMobile ? 13 : 22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
+                        </button>
+                      ))
+                    ) : visibleProjects.length === 0 ? (
+                      <div className={`${isMobile ? 'px-2 pt-4 text-[11px]' : 'px-2 pt-6 text-[14px]'}`} style={{ color: 'rgba(0,0,0,0.42)' }}>
+                        Ce dossier est vide.
+                      </div>
                     ) : (
                       visibleProjects.map((project, index) => (
                         <button
@@ -535,6 +637,24 @@ export function FinderWindow() {
                           <div className="text-[14px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
                             Aucun élément récent
                           </div>
+                        ) : activeSection === 'desktop' ? (
+                          <div className="flex flex-wrap gap-6 justify-center">
+                            {DESKTOP_ITEMS.map((item) => (
+                              <motion.button
+                                key={item.id}
+                                onClick={() => openDesktopItem(item)}
+                                aria-label={`Ouvrir ${item.label}`}
+                                whileHover={{ y: -2 }}
+                                className="flex flex-col items-center gap-1.5 group outline-none"
+                              >
+                                <DesktopItemThumb item={item} size={80} />
+                                <span className="text-[10px] text-center leading-tight max-w-[90px] truncate transition-colors"
+                                  style={{ color: 'rgba(0,0,0,0.6)' }}>
+                                  {item.label}
+                                </span>
+                              </motion.button>
+                            ))}
+                          </div>
                         ) : visibleProjects[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -543,6 +663,10 @@ export function FinderWindow() {
                             className="max-w-[58%] max-h-[62%] object-contain"
                             draggable={false}
                           />
+                        ) : visibleProjects.length === 0 ? (
+                          <div className="text-[14px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
+                            Ce dossier est vide
+                          </div>
                         ) : (
                           <ProjectFolderGrid projects={visibleProjects} onOpen={openProject} />
                         )}
@@ -564,6 +688,17 @@ export function FinderWindow() {
           onClose={() => setLightboxIndex(null)}
           onPrev={() => setLightboxIndex((i) => (i! - 1 + selectedProject.images.length) % selectedProject.images.length)}
           onNext={() => setLightboxIndex((i) => (i! + 1) % selectedProject.images.length)}
+        />
+      )}
+
+      {desktopItemLightboxSrc && (
+        <Lightbox
+          images={[desktopItemLightboxSrc]}
+          colors={['#111111']}
+          current={0}
+          onClose={() => setDesktopItemLightboxSrc(null)}
+          onPrev={() => undefined}
+          onNext={() => undefined}
         />
       )}
     </Window>

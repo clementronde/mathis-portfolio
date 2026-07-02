@@ -16,6 +16,8 @@ interface DesktopItemProps {
   type?: 'photo' | 'folder' | 'map';
   dragConstraints?: RefObject<HTMLElement | null>;
   onMove?: (position: { left: number; top: number }) => void;
+  finderSelectHover?: boolean;
+  blink?: boolean;
 }
 
 export function DesktopItem({
@@ -30,6 +32,8 @@ export function DesktopItem({
   type = 'photo',
   dragConstraints,
   onMove,
+  finderSelectHover = false,
+  blink = false,
 }: DesktopItemProps) {
   const itemRef = useRef<HTMLButtonElement>(null);
   const wasDragged = useRef(false);
@@ -90,6 +94,7 @@ export function DesktopItem({
       transition={{ type: 'spring', stiffness: 300, damping: 18 }}
       aria-label={`Ouvrir ${label}`}
       data-scrollytelling-ignore="true"
+      data-finder-select={finderSelectHover ? 'true' : undefined}
     >
       {/* Image / folder / map */}
       <div
@@ -98,14 +103,15 @@ export function DesktopItem({
           aspectRatio,
           background: imageColor,
           backgroundImage: imageSrc && type !== 'map' && !/\.(gif|mp4|webm)$/i.test(imageSrc) ? `url("${encodeSrc(imageSrc)}")` : undefined,
-          backgroundSize: 'cover',
+          backgroundSize: type === 'folder' && imageColor === 'transparent' ? 'contain' : 'cover',
           backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           borderRadius: 0,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+          boxShadow: imageColor === 'transparent' ? 'none' : '0 8px 24px rgba(0,0,0,0.5)',
           overflow: 'hidden',
           position: 'relative',
         }}
-        className="transition-shadow"
+        className={`di-icon transition-shadow${blink ? ' desktop-item-blink' : ''}`}
       >
         {imageSrc && /\.(mp4|webm)$/i.test(imageSrc) && (
           <video
@@ -196,7 +202,7 @@ export function DesktopItem({
 
       {/* Label */}
       <span
-        className="text-white text-[12px] font-medium px-2 py-0.5 rounded-md"
+        className="di-label text-white text-[12px] font-medium px-2 py-0.5 rounded-md"
         style={{
           background: 'rgba(0,0,0,0.5)',
           backdropFilter: 'blur(8px)',

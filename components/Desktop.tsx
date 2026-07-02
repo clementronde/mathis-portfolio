@@ -25,71 +25,8 @@ import { Lightbox } from './Lightbox';
 import type { AppId } from '@/store/useWindowStore';
 import { PROJECTS } from '@/data/projects';
 import { PHOTOS } from '@/data/photos';
+import { DESKTOP_ITEMS } from '@/data/desktopItems';
 import { encodeSrc } from '@/utils/path';
-
-// Desktop collage — 5 real projects
-const DESKTOP_ITEMS = [
-  {
-    id: 'course-adidas-item',
-    label: 'Course Adidas',
-    imageSrc: '/images/desktop/my-first-10k-v0-v8kel475syzc1 1.png',
-    imageColor: '#d9f0dc',
-    rotate: 0,
-    style: { left: '8.5%', top: '15%' },
-    width: 285,
-    aspectRatio: '413/272',
-    type: 'photo' as const,
-    action: { type: 'lightbox' },
-  },
-  {
-    id: 'rats-item',
-    label: 'Les Rats',
-    imageSrc: '/images/projects/25-07-25 SHOOT_LES RATS/MSA00289.avif',
-    imageColor: '#0a0a0f',
-    rotate: 0,
-    style: { left: '4%', bottom: '21%' },
-    width: 210,
-    aspectRatio: '4/5',
-    type: 'photo' as const,
-    action: { type: 'finder', folder: 'shoot-les-rats' },
-  },
-  {
-    id: 'family-item',
-    label: 'Family',
-    imageSrc: '/images/desktop/202606302120 (1).mp4',
-    imageColor: '#2e1208',
-    rotate: 0,
-    style: { right: '12%', top: '6%' },
-    width: 265,
-    aspectRatio: '16/10',
-    type: 'photo' as const,
-    action: { type: 'finder', folder: 'noel-ayme' },
-  },
-  {
-    id: 'couscous-item',
-    label: 'Couscous',
-    imageSrc: '/images/desktop/videocouscous.mp4',
-    imageColor: '#2e1a00',
-    rotate: 0,
-    style: { right: '7%', top: '22%' },
-    width: 155,
-    aspectRatio: '1/2',
-    type: 'photo' as const,
-    action: { type: 'lightbox' },
-  },
-  {
-    id: 'album-moment-item',
-    label: 'Album du moment',
-    imageSrc: '/images/desktop/Album du moment.png',
-    imageColor: '#1a0a2e',
-    rotate: 0,
-    style: { right: '12%', bottom: '16%' },
-    width: 250,
-    aspectRatio: '1/1',
-    type: 'photo' as const,
-    action: { type: 'lightbox' },
-  },
-] as const;
 
 
 const WINDOWS: { id: AppId; element: React.ReactNode }[] = [
@@ -139,7 +76,7 @@ const SITE_PRELOAD_IMAGES = Array.from(
 
 const PRELOAD_TOTAL = SITE_PRELOAD_IMAGES.length;
 
-const DESKTOP_ITEM_POSITIONS_KEY = 'portfolio-desktop-item-positions-v2';
+const DESKTOP_ITEM_POSITIONS_KEY = 'portfolio-desktop-item-positions-v3';
 const DESKTOP_REFERENCE_SIZE = { width: 1440, height: 900 };
 
 function getDefaultItemPositions() {
@@ -391,6 +328,8 @@ export function Desktop() {
               width={isMobile ? Math.round(item.width * 0.38) : item.width}
               aspectRatio={item.aspectRatio}
               type={item.type}
+              finderSelectHover={'finderSelectHover' in item ? item.finderSelectHover : false}
+              blink={'blink' in item ? item.blink : false}
               dragConstraints={desktopItemsRef}
               onMove={(position) => {
                 setItemPositions((positions) => {
