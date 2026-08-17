@@ -1,15 +1,9 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
 import { useWindowStore } from '@/store/useWindowStore';
-import {
-  useScrollytellingStore,
-  getStepAppId,
-  getStepFinderFolder,
-  SCROLL_STEPS,
-} from '@/store/useScrollytellingStore';
 import { TopBar } from './TopBar';
+import { HomeNotifications } from './HomeNotifications';
 import { Dock } from './Dock';
 import { DesktopItem } from './DesktopItem';
 import { FinderWindow } from './FinderWindow';
@@ -127,11 +121,9 @@ function getMobileItemPosition(item: (typeof DESKTOP_ITEMS)[number]): React.CSSP
 
 export function Desktop() {
   const { openWindows, openWindow } = useWindowStore();
-  const { step, nextStep, prevStep } = useScrollytellingStore();
   const desktopItemsRef = useRef<HTMLDivElement>(null);
   const preloadImagesRef = useRef<HTMLImageElement[]>([]);
   const [itemPositions, setItemPositions] = useState<Record<string, React.CSSProperties>>(getDefaultItemPositions);
-  const scrollCooldown = useRef(false);
   const [locked, setLocked] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [desktopLightboxImage, setDesktopLightboxImage] = useState<string | null>(null);
@@ -204,76 +196,6 @@ export function Desktop() {
     };
   }, [locked]);
 
-  // Sync step → window open/close
-  useEffect(() => {
-    const appId = getStepAppId(step);
-    const finderFolder = getStepFinderFolder(step);
-    const { openWindows: current, openWindow: open, closeWindow: close } = useWindowStore.getState();
-    current.forEach((id) => { if (id !== appId) close(id); });
-    if (appId) open(appId, appId === 'finder' ? finderFolder : undefined);
-  }, [step]);
-
-  // Wheel / touch scroll → advance/retreat step
-  useEffect(() => {
-    const shouldIgnoreScrollytellingGesture = (target: EventTarget | null) =>
-      target instanceof Element &&
-      target.closest('[data-window-interactive="true"], [data-scrollytelling-ignore="true"]') !== null;
-
-    const handleWheel = (e: WheelEvent) => {
-      if (locked) return;
-      if (shouldIgnoreScrollytellingGesture(e.target)) return;
-      if (scrollCooldown.current) return;
-      scrollCooldown.current = true;
-      setTimeout(() => { scrollCooldown.current = false; }, 900);
-      if (e.deltaY > 0) nextStep();
-      else if (e.deltaY < 0) prevStep();
-    };
-
-    let touchStartY = 0;
-    let touchStartedInsideIgnoredElement = false;
-    const handleTouchStart = (e: TouchEvent) => {
-      if (locked) return;
-      touchStartedInsideIgnoredElement = shouldIgnoreScrollytellingGesture(e.target);
-      touchStartY = e.touches[0].clientY;
-    };
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (locked) return;
-      if (touchStartedInsideIgnoredElement || shouldIgnoreScrollytellingGesture(e.target)) return;
-      const delta = touchStartY - e.changedTouches[0].clientY;
-      if (Math.abs(delta) < 50 || scrollCooldown.current) return;
-      scrollCooldown.current = true;
-      setTimeout(() => { scrollCooldown.current = false; }, 900);
-      if (delta > 0) nextStep();
-      else prevStep();
-    };
-
-    window.addEventListener('wheel', handleWheel, { passive: true });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [locked, nextStep, prevStep]);
-
-  // Keyboard navigation (arrow keys when no window is open)
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (locked) return;
-      if (getStepAppId(step) !== null) return; // let window handle its own keys
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
-        e.preventDefault();
-        nextStep();
-      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-        e.preventDefault();
-        prevStep();
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [locked, step, nextStep, prevStep]);
-
   return (
     <div
       className="fixed inset-0 overflow-hidden select-none"
@@ -292,6 +214,7 @@ export function Desktop() {
         style={{ pointerEvents: locked ? 'none' : 'auto' }}
       >
         <TopBar />
+        <HomeNotifications />
 
         {/* Logo MSA — desktop grand, mobile petit */}
         <div className="absolute left-1/2 z-[9] -translate-x-1/2 pointer-events-none select-none"
@@ -328,8 +251,8 @@ export function Desktop() {
               width={isMobile ? Math.round(item.width * 0.38) : item.width}
               aspectRatio={item.aspectRatio}
               type={item.type}
-              finderSelectHover={'finderSelectHover' in item ? item.finderSelectHover : false}
-              blink={'blink' in item ? item.blink : false}
+              finderSelectHover={item.finderSelectHover ?? false}
+              blink={item.blink ?? false}
               dragConstraints={desktopItemsRef}
               onMove={(position) => {
                 setItemPositions((positions) => {
@@ -375,44 +298,6 @@ export function Desktop() {
         </div>
 
         <Dock />
-
-        {/* ── Scroll hint (step 0, desktop uniquement) ── */}
-        <AnimatePresence>
-          {step === 0 && (
-            <motion.div
-              key="scroll-hint"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.4 }}
-              className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[80] hidden md:flex flex-col items-center gap-1.5 pointer-events-none select-none"
-            >
-              <span className="text-white/50 text-[11px] tracking-widest uppercase">Défiler pour explorer</span>
-              <motion.div
-                animate={{ y: [0, 5, 0] }}
-                transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-              >
-                <ChevronDown size={18} className="text-white/40" />
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Step progress dots ── */}
-        <div className="fixed left-4 top-1/2 -translate-y-1/2 z-[80] hidden md:flex flex-col gap-2 pointer-events-none select-none">
-          {SCROLL_STEPS.map((_, i) => (
-            <div
-              key={i}
-              className="rounded-full transition-all duration-300"
-              style={{
-                width: i === step ? 6 : 5,
-                height: i === step ? 6 : 5,
-                background: i === step ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.22)',
-                transform: i === step ? 'scale(1.3)' : 'scale(1)',
-              }}
-            />
-          ))}
-        </div>
       </motion.div>
 
       {/* ── Lock screen overlay ── */}

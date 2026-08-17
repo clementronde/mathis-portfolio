@@ -7,7 +7,6 @@ import { Lightbox } from './Lightbox';
 import { PROJECTS } from '@/data/projects';
 import { encodeSrc } from '@/utils/path';
 import { Folder, ImageIcon, Minus, Plus } from 'lucide-react';
-import { useScrollytellingStore, getStepPhotoScrollProgress } from '@/store/useScrollytellingStore';
 
 // Flatten all project images into a single list, tagged by project id
 const ALL_PHOTOS = PROJECTS.flatMap((proj) =>
@@ -30,7 +29,6 @@ export function PhotosWindow() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
   const [isMobile, setIsMobile] = useState(false);
-  const step = useScrollytellingStore((state) => state.step);
   const windowContentRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
 
@@ -66,25 +64,6 @@ export function PhotosWindow() {
     lastZoomChangeRef.current = now;
     setClampedZoom((current) => current + direction);
   };
-
-  useEffect(() => {
-    const progress = getStepPhotoScrollProgress(step);
-    if (progress === undefined) return;
-
-    setSelectedProject(null);
-    setLightboxIndex(null);
-
-    requestAnimationFrame(() => {
-      const gallery = galleryRef.current;
-      if (!gallery) return;
-
-      const maxScroll = gallery.scrollHeight - gallery.clientHeight;
-      gallery.scrollTo({
-        top: Math.max(0, maxScroll * progress),
-        behavior: 'smooth',
-      });
-    });
-  }, [step]);
 
   useEffect(() => {
     const windowContent = windowContentRef.current;

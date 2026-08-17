@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { DOCK_APPS } from '@/data/apps';
 import { AppIcon } from '@/components/icons/AppIcons';
 import { useWindowStore, type AppId } from '@/store/useWindowStore';
-import { getOpenStepIndexForApp, useScrollytellingStore } from '@/store/useScrollytellingStore';
 
 const panelStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.14)',
@@ -16,7 +15,6 @@ const panelStyle: React.CSSProperties = {
 
 export function Dock() {
   const { openWindow, openWindows } = useWindowStore();
-  const setStep = useScrollytellingStore((state) => state.setStep);
   // Petit = phone + tablette (< 1024px) → icônes plus petites
   const [isSmall, setIsSmall] = useState(false);
 
@@ -42,7 +40,7 @@ export function Dock() {
         return (
           <motion.button
             key={app.id}
-            onClick={() => { openWindow(app.id); setStep(getOpenStepIndexForApp(app.id)); }}
+            onClick={() => openWindow(app.id)}
             aria-label={`Ouvrir ${app.label}`}
             title={app.label}
             className="relative flex items-center justify-center group outline-none"

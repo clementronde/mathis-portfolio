@@ -105,7 +105,7 @@ export function LockScreen({ canUnlock, loadedImages, onUnlock, totalImages }: L
           className="mt-5 text-[19px] sm:text-[24px] font-semibold"
           style={{ textShadow: '0 2px 18px rgba(0,0,0,0.45)' }}
         >
-          mathis straebler
+          HUMAN CREATIVE
         </span>
         <span className="mt-2 text-[12px] sm:text-[13px] tracking-[0.16em] font-medium text-white/70">
           {canUnlock ? 'Cliquer pour entrer' : `Chargement ${progress}%`}

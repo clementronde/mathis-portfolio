@@ -8,11 +8,6 @@ import {
 } from 'framer-motion';
 import { X, Minus, Maximize2, Minimize2 } from 'lucide-react';
 import { useWindowStore, type AppId } from '@/store/useWindowStore';
-import {
-  useScrollytellingStore,
-  getClosedStepIndexForApp,
-  getStepAppId,
-} from '@/store/useScrollytellingStore';
 
 interface WindowProps {
   id: AppId;
@@ -97,7 +92,6 @@ export function Window({
 }: WindowProps) {
   const { closeWindow, focusWindow, activeWindow } = useWindowStore();
   const isActive = activeWindow === id;
-  const { step, setStep } = useScrollytellingStore();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -107,7 +101,6 @@ export function Window({
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
   }, []);
-  const isScrollytelling = getStepAppId(step) === id;
 
   const initPos = defaultPosition ?? centeredPos(defaultSize.width, defaultSize.height);
   const x = useMotionValue(initPos.x);
@@ -295,11 +288,6 @@ export function Window({
   }
 
   function closeFromControls() {
-    if (isScrollytelling) {
-      setStep(getClosedStepIndexForApp(id));
-      return;
-    }
-
     closeWindow(id);
   }
 
@@ -317,7 +305,7 @@ export function Window({
     closeFromControls();
   }
 
-  // Keyboard shortcut: Escape closes / advances step
+  // Keyboard shortcut: Escape closes the window
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isActive) {
@@ -415,7 +403,7 @@ export function Window({
         )}
       </div>
 
-      {/* Content — stoppe la propagation touch pour éviter le déclenchement du scrollytelling */}
+      {/* Content */}
       <div
         className="flex-1 overflow-hidden"
         data-window-interactive="true"

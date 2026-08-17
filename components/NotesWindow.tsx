@@ -5,7 +5,6 @@ import { FileText } from 'lucide-react';
 import { Window } from './Window';
 import { AppIcon } from './icons/AppIcons';
 import { NOTES, type Note, type NoteCategory } from '@/data/notes';
-import { useScrollytellingStore, getStepNoteIndex } from '@/store/useScrollytellingStore';
 import { useWindowStore } from '@/store/useWindowStore';
 
 const NOTE_FOLDERS = [
@@ -27,7 +26,6 @@ export function NotesWindow() {
   const [activeFolder, setActiveFolder] = useState<NoteCategory>(
     () => (NOTES.find((note) => note.id === useWindowStore.getState().selectedNoteId) ?? NOTES[0]).category
   );
-  const step = useScrollytellingStore((state) => state.step);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileNotesOpen, setMobileNotesOpen] = useState(false);
   useEffect(() => {
@@ -56,14 +54,6 @@ export function NotesWindow() {
     const nextNote = NOTES.find((note) => note.category === nextFolder);
     if (nextNote) selectNote(nextNote);
   }
-
-  useEffect(() => {
-    const noteIndex = getStepNoteIndex(step);
-    const nextNote = noteIndex !== undefined ? NOTES[noteIndex] : undefined;
-    if (!nextNote) return;
-
-    selectNote(nextNote);
-  }, [step]);
 
   useEffect(() => {
     const nextNote = NOTES.find((note) => note.id === selectedNoteId);

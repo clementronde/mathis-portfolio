@@ -81,8 +81,20 @@ type FinderSection = FinderSectionId;
 
 const SIDEBAR_ITEMS = [
   { id: 'desktop', label: 'Bureau', icon: Monitor },
-  { id: 'documents', label: 'Derniers Projets', icon: FileText },
+  { id: 'documents', label: 'Documents', icon: FileText },
 ] satisfies { id: FinderSection; label: string; icon: typeof Monitor }[];
+
+const CV_FILE_PATH = '/documents/CV-Mathis-Straebler.pdf';
+
+type DocumentsSelection = 'cv' | 'diplomes' | 'projets-recents';
+
+const DOCUMENTS_ROOT_ITEMS = [
+  { id: 'cv', label: 'CV' },
+  { id: 'diplomes', label: 'Diplômes' },
+  { id: 'projets-recents', label: 'Projets récents' },
+] as const;
+
+const CV_FILE_LABEL = 'CV de Mathis Straebler';
 
 const SECTION_PROJECTS: Record<FinderSection, Project[]> = {
   recents: FINDER_PROJECTS,
@@ -96,7 +108,7 @@ const SECTION_PROJECTS: Record<FinderSection, Project[]> = {
 const SECTION_TITLES: Record<FinderSection, string> = {
   recents: 'Récents',
   desktop: 'Bureau',
-  documents: 'Derniers Projets',
+  documents: 'Documents',
   'social-media': 'Social Média',
   photos: 'Photos',
   videos: 'Videos',
@@ -301,6 +313,7 @@ export function FinderWindow() {
   });
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [desktopItemLightboxSrc, setDesktopItemLightboxSrc] = useState<string | null>(null);
+  const [documentsSelected, setDocumentsSelected] = useState<DocumentsSelection>('cv');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -317,14 +330,17 @@ export function FinderWindow() {
       setSelectedProject(proj);
       setActiveSection(getProjectSection(proj) ?? 'documents');
       setActiveImageIndex(0);
+      setDocumentsSelected('cv');
     } else if (finderFolder === null) {
       setSelectedProject(null);
       setActiveSection('documents');
       setActiveImageIndex(0);
+      setDocumentsSelected('cv');
     } else if (isFinderSection(finderFolder)) {
       setSelectedProject(null);
       setActiveSection(finderFolder);
       setActiveImageIndex(0);
+      setDocumentsSelected('cv');
     }
   }, [finderFolder]);
 
@@ -339,6 +355,11 @@ export function FinderWindow() {
     setActiveSection(section);
     setSelectedProject(null);
     setActiveImageIndex(0);
+    setDocumentsSelected('cv');
+  }
+
+  function openCvFile() {
+    window.open(CV_FILE_PATH, '_blank', 'noopener,noreferrer');
   }
 
   function openDesktopItem(item: DesktopItemConfig) {
@@ -597,6 +618,58 @@ export function FinderWindow() {
                           <ChevronRight size={isMobile ? 13 : 22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
                         </button>
                       ))
+                    ) : activeSection === 'documents' ? (
+                      <>
+                        {DOCUMENTS_ROOT_ITEMS.map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => setDocumentsSelected(item.id)}
+                            className={`w-full ${isMobile ? 'h-[38px] gap-2' : 'h-[54px] gap-3'} px-2 flex items-center rounded-md text-left transition-colors`}
+                            style={{ background: documentsSelected === item.id ? 'rgba(0,0,0,0.06)' : 'transparent' }}
+                          >
+                            <FolderIcon size={isMobile ? 22 : 34} />
+                            <span className={`${isMobile ? 'text-[11px]' : 'text-[15px]'} font-semibold truncate`}>{item.label}</span>
+                            <ChevronRight size={isMobile ? 13 : 22} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
+                          </button>
+                        ))}
+
+                        {/* Sur mobile il n'y a pas de panneau droit : on affiche le contenu sélectionné juste en dessous */}
+                        {isMobile && (
+                          <div className="mt-3 border-t border-black/10 pt-3">
+                            {documentsSelected === 'cv' ? (
+                              <button
+                                onClick={openCvFile}
+                                className="w-full h-[38px] gap-2 px-2 flex items-center rounded-md text-left transition-colors"
+                              >
+                                <div className="flex items-center justify-center shrink-0" style={{ width: 22, height: 22, color: '#c29300' }}>
+                                  <FileText size={16} strokeWidth={1.7} />
+                                </div>
+                                <span className="text-[11px] font-semibold truncate">{CV_FILE_LABEL}</span>
+                              </button>
+                            ) : documentsSelected === 'diplomes' ? (
+                              <div className="px-2 text-[11px]" style={{ color: 'rgba(0,0,0,0.42)' }}>
+                                Ce dossier est vide.
+                              </div>
+                            ) : FINDER_PROJECTS.length === 0 ? (
+                              <div className="px-2 text-[11px]" style={{ color: 'rgba(0,0,0,0.42)' }}>
+                                Ce dossier est vide.
+                              </div>
+                            ) : (
+                              FINDER_PROJECTS.map((project) => (
+                                <button
+                                  key={project.id}
+                                  onClick={() => openProject(project)}
+                                  className="w-full h-[38px] gap-2 px-2 flex items-center rounded-md text-left transition-colors"
+                                >
+                                  <FolderIcon coverImage={project.coverImage} color={project.color} size={22} />
+                                  <span className="text-[11px] font-semibold truncate">{project.title}</span>
+                                  <ChevronRight size={13} className="ml-auto" style={{ color: 'rgba(0,0,0,0.55)' }} />
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </>
                     ) : visibleProjects.length === 0 ? (
                       <div className={`${isMobile ? 'px-2 pt-4 text-[11px]' : 'px-2 pt-6 text-[14px]'}`} style={{ color: 'rgba(0,0,0,0.42)' }}>
                         Ce dossier est vide.
@@ -655,6 +728,31 @@ export function FinderWindow() {
                               </motion.button>
                             ))}
                           </div>
+                        ) : activeSection === 'documents' && documentsSelected === 'cv' ? (
+                          <button
+                            onClick={openCvFile}
+                            className="flex items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-black/[0.04]"
+                          >
+                            <div
+                              className="flex items-center justify-center shrink-0"
+                              style={{ width: 34, height: 34, color: '#c29300' }}
+                            >
+                              <FileText size={24} strokeWidth={1.7} />
+                            </div>
+                            <span className="text-[15px] font-semibold truncate">{CV_FILE_LABEL}</span>
+                          </button>
+                        ) : activeSection === 'documents' && documentsSelected === 'diplomes' ? (
+                          <div className="text-[14px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
+                            Ce dossier est vide
+                          </div>
+                        ) : activeSection === 'documents' && documentsSelected === 'projets-recents' ? (
+                          FINDER_PROJECTS.length === 0 ? (
+                            <div className="text-[14px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
+                              Ce dossier est vide
+                            </div>
+                          ) : (
+                            <ProjectFolderGrid projects={FINDER_PROJECTS} onOpen={openProject} />
+                          )
                         ) : visibleProjects[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
