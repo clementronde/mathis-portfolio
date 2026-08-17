@@ -1,30 +1,42 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Window } from './Window';
 import { AppIcon } from './icons/AppIcons';
-import { Lightbox } from './Lightbox';
 import { PROJECTS } from '@/data/projects';
 import { encodeSrc } from '@/utils/path';
-import { Folder, ImageIcon, Minus, Plus } from 'lucide-react';
+import { useWindowStore } from '@/store/useWindowStore';
+import { ChevronLeft, ChevronRight, Folder, ImageIcon, Minus, Plus, X } from 'lucide-react';
 
 // Flatten all project images into a single list, tagged by project id
 const ALL_PHOTOS = PROJECTS.flatMap((proj) =>
   proj.images
     .filter((img) => /\.(avif|jpg|jpeg|JPG|webp|png)$/i.test(img))
-    .map((img, i) => ({ src: img, color: proj.color, projectId: proj.id, key: `${proj.id}-${i}` }))
+    .map((img, i) => ({
+      src: img,
+      color: proj.color,
+      projectId: proj.id,
+      projectTitle: proj.title,
+      category: proj.category,
+      location: proj.location,
+      year: proj.year,
+      description: proj.description,
+      key: `${proj.id}-${i}`,
+    }))
 );
 
 const ZOOM_MIN = 0;
 const ZOOM_MAX = 5;
 const DEFAULT_ZOOM = 3;
-const COLUMNS_BY_ZOOM = [8, 7, 6, 4, 3, 2];
+const TILE_WIDTH_BY_ZOOM = [70, 82, 96, 116, 142, 176];
 const WHEEL_ZOOM_STEP = 420;
 const PINCH_ZOOM_IN_SCALE = 1.8;
 const PINCH_ZOOM_OUT_SCALE = 0.55;
 const ZOOM_COOLDOWN_MS = 260;
 
 export function PhotosWindow() {
+  const openWindow = useWindowStore((state) => state.openWindow);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
@@ -49,7 +61,7 @@ export function PhotosWindow() {
     : ALL_PHOTOS;
 
   const currentProject = PROJECTS.find((p) => p.id === selectedProject);
-  const columnCount = COLUMNS_BY_ZOOM[zoomLevel];
+  const tileWidth = TILE_WIDTH_BY_ZOOM[zoomLevel];
   currentZoomRef.current = zoomLevel;
   const setClampedZoom = (nextZoom: number | ((current: number) => number)) => {
     setZoomLevel((current) => {
@@ -247,22 +259,25 @@ export function PhotosWindow() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="gap-2"
-                style={{ columnCount, columnGap: 8 }}
+                className="photos-random-grid"
+                style={{
+                  '--photo-tile': `${tileWidth}px`,
+                  '--photo-row': `${Math.round(tileWidth * 0.76)}px`,
+                } as React.CSSProperties}
               >
                 {filtered.map((photo, idx) => (
                   <motion.button
                     key={photo.key}
                     onClick={() => setLightboxIndex(idx)}
                     aria-label={`Photo ${idx + 1}`}
-                    className="block w-full mb-2 rounded-md overflow-hidden outline-none"
-                    whileHover={{ opacity: 0.88 }}
-                    transition={{ duration: 0.1 }}
+                    className={`photos-random-tile photos-random-tile--${idx % 11}`}
+                    whileHover={{ scale: 0.985, opacity: 0.9 }}
+                    transition={{ duration: 0.16 }}
                   >
                     <div
                       style={{
                         width: '100%',
-                        aspectRatio: idx % 5 === 0 ? '1/1' : idx % 5 === 1 ? '3/4' : idx % 5 === 2 ? '4/3' : idx % 5 === 3 ? '2/3' : '4/5',
+                        height: '100%',
                         background: photo.color,
                         position: 'relative',
                         overflow: 'hidden',
@@ -286,15 +301,134 @@ export function PhotosWindow() {
       </div>
 
       {lightboxIndex !== null && (
-        <Lightbox
-          images={filtered.map((p) => p.src)}
-          colors={filtered.map((p) => p.color)}
+        <PhotoDetails
+          photos={filtered}
           current={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onPrev={() => setLightboxIndex((i) => (i! - 1 + filtered.length) % filtered.length)}
           onNext={() => setLightboxIndex((i) => (i! + 1) % filtered.length)}
+          onOpenAlbum={(projectId) => {
+            setLightboxIndex(null);
+            openWindow('finder', projectId);
+          }}
         />
       )}
     </Window>
+  );
+}
+
+type GalleryPhoto = (typeof ALL_PHOTOS)[number];
+
+function fileName(src: string) {
+  return decodeURIComponent(src.split('/').pop() ?? 'Photo').replace(/\.[^.]+$/, '');
+}
+
+function fileFormat(src: string) {
+  return (src.split('.').pop() ?? 'image').toUpperCase();
+}
+
+function PhotoDetails({
+  photos,
+  current,
+  onClose,
+  onPrev,
+  onNext,
+  onOpenAlbum,
+}: {
+  photos: GalleryPhoto[];
+  current: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  onOpenAlbum: (projectId: string) => void;
+}) {
+  const photo = photos[current];
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+      if (event.key === 'ArrowLeft') onPrev();
+      if (event.key === 'ArrowRight') onNext();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, onNext, onPrev]);
+
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, []);
+
+  return createPortal(
+    <motion.div
+      className="photos-detail-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Informations de ${fileName(photo.src)}`}
+    >
+      <div className="photos-detail-backdrop" aria-hidden="true">
+        {photos.slice(0, 24).map((item, index) => (
+          <div className={`photos-detail-backdrop-tile photos-detail-backdrop-tile--${index % 7}`} key={item.key}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={encodeSrc(item.src)} alt="" />
+          </div>
+        ))}
+      </div>
+      <div className="photos-detail-veil" aria-hidden="true" />
+
+      <motion.article
+        className="photos-detail-card"
+        initial={{ y: 28, scale: 0.96 }}
+        animate={{ y: 0, scale: 1 }}
+        transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="photos-detail-lights" aria-hidden="true"><i /><i /><i /></div>
+        <button className="photos-detail-close" onClick={onClose} aria-label="Fermer"><X size={16} /></button>
+
+        <motion.div key={photo.key} className="photos-detail-image-wrap" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={encodeSrc(photo.src)} alt={`${photo.projectTitle} — ${photo.location}`} />
+        </motion.div>
+
+        <div className="photos-detail-copy">
+          <p className="photos-detail-kicker">{photo.category} · {current + 1}/{photos.length}</p>
+          <h2>{fileName(photo.src)}</h2>
+          <p className="photos-detail-description">{photo.description}</p>
+          <dl>
+            <div><dt>Année</dt><dd>{photo.year}</dd></div>
+            <div>
+              <dt>Album</dt>
+              <dd>
+                <button
+                  type="button"
+                  className="photos-detail-album-link"
+                  onClick={() => onOpenAlbum(photo.projectId)}
+                  aria-label={`Ouvrir l’album ${photo.projectTitle} dans Finder`}
+                >
+                  {photo.projectTitle}
+                  <ChevronRight size={11} aria-hidden="true" />
+                </button>
+              </dd>
+            </div>
+            <div><dt>Lieu</dt><dd>{photo.location}</dd></div>
+            <div><dt>Format</dt><dd>Image · {fileFormat(photo.src)}</dd></div>
+          </dl>
+        </div>
+
+        {photos.length > 1 && (
+          <div className="photos-detail-nav">
+            <button onClick={onPrev} aria-label="Photo précédente"><ChevronLeft size={18} /></button>
+            <button onClick={onNext} aria-label="Photo suivante"><ChevronRight size={18} /></button>
+          </div>
+        )}
+      </motion.article>
+    </motion.div>,
+    document.body
   );
 }

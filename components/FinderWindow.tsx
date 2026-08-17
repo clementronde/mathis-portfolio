@@ -301,7 +301,7 @@ function RecentItemsList({
 
 /* ─── Main component ─────────────────────────────────────────────── */
 export function FinderWindow() {
-  const { finderFolder, recentItems, openNote, recordRecentProject } = useWindowStore();
+  const { finderFolder, finderNavigationVersion, recentItems, openNote, recordRecentProject } = useWindowStore();
   const [selectedProject, setSelectedProject] = useState<Project | null>(
     () => findFinderProject(finderFolder)
   );
@@ -342,7 +342,7 @@ export function FinderWindow() {
       setActiveImageIndex(0);
       setDocumentsSelected('cv');
     }
-  }, [finderFolder]);
+  }, [finderFolder, finderNavigationVersion]);
 
   function openProject(project: Project) {
     setSelectedProject(project);

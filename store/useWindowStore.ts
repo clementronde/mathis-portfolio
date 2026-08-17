@@ -37,6 +37,7 @@ interface WindowStore {
   openWindows: AppId[];
   activeWindow: AppId | null;
   finderFolder: string | null;
+  finderNavigationVersion: number;
   selectedNoteId: string | null;
   recentItems: RecentItem[];
   openWindow: (id: AppId, folder?: string | null) => void;
@@ -52,6 +53,7 @@ export const useWindowStore = create<WindowStore>((set) => ({
   openWindows: [],
   activeWindow: null,
   finderFolder: null,
+  finderNavigationVersion: 0,
   selectedNoteId: null,
   recentItems: [],
   openWindow: (id, folder) =>
@@ -61,6 +63,9 @@ export const useWindowStore = create<WindowStore>((set) => ({
         : [...state.openWindows, id],
       activeWindow: id,
       finderFolder: folder !== undefined ? folder : state.finderFolder,
+      finderNavigationVersion: id === 'finder' && folder !== undefined
+        ? state.finderNavigationVersion + 1
+        : state.finderNavigationVersion,
       recentItems: id === 'finder' && folder && !FINDER_SECTION_IDS.includes(folder as FinderSectionId)
         ? addRecentItem(state.recentItems, { type: 'project', itemId: folder })
         : state.recentItems,
