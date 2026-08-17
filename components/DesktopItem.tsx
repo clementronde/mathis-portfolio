@@ -77,7 +77,7 @@ export function DesktopItem({
   return (
     <motion.button
       ref={itemRef}
-      className="absolute flex flex-col items-center gap-1.5 group outline-none cursor-grab active:cursor-grabbing touch-none"
+      className="pointer-events-auto absolute flex flex-col items-center gap-1.5 group outline-none cursor-grab active:cursor-grabbing touch-none"
       style={{ rotate, x, y, ...style }}
       drag
       dragConstraints={dragConstraints}

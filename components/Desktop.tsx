@@ -249,7 +249,7 @@ export function Desktop() {
         </div>
 
         {/* Desktop collage — toutes tailles, largeurs réduites sur mobile */}
-        <div ref={desktopItemsRef} data-tour="desktop-items" className="absolute inset-0 z-[10]">
+        <div ref={desktopItemsRef} data-tour="desktop-items" className="pointer-events-none absolute inset-0 z-[10]">
           {DESKTOP_ITEMS.map((item) => (
             <DesktopItem
               key={item.id}
