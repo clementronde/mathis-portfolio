@@ -27,6 +27,7 @@ export function TopBar() {
 
   return (
     <div
+      data-tour="topbar"
       className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-3 sm:px-4 h-7 text-white text-[12px] sm:text-[13px] select-none"
       style={{
         background: 'rgba(0,0,0,0.45)',

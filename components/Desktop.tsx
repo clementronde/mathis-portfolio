@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useWindowStore } from '@/store/useWindowStore';
 import { TopBar } from './TopBar';
@@ -21,6 +21,7 @@ import { PROJECTS } from '@/data/projects';
 import { PHOTOS } from '@/data/photos';
 import { DESKTOP_ITEMS } from '@/data/desktopItems';
 import { encodeSrc } from '@/utils/path';
+import { DesktopTour } from './DesktopTour';
 
 
 const WINDOWS: { id: AppId; element: React.ReactNode }[] = [
@@ -129,6 +130,8 @@ export function Desktop() {
   const [desktopLightboxImage, setDesktopLightboxImage] = useState<string | null>(null);
   const [preloadCompleteCount, setPreloadCompleteCount] = useState(0);
   const [preloadReady, setPreloadReady] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+  const finishTour = useCallback(() => setShowTour(false), []);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -196,6 +199,13 @@ export function Desktop() {
     };
   }, [locked]);
 
+  useEffect(() => {
+    if (locked) return;
+
+    const tourTimer = window.setTimeout(() => setShowTour(true), 780);
+    return () => window.clearTimeout(tourTimer);
+  }, [locked]);
+
   return (
     <div
       className="fixed inset-0 overflow-hidden select-none"
@@ -239,7 +249,7 @@ export function Desktop() {
         </div>
 
         {/* Desktop collage — toutes tailles, largeurs réduites sur mobile */}
-        <div ref={desktopItemsRef} className="absolute inset-0 z-[10]">
+        <div ref={desktopItemsRef} data-tour="desktop-items" className="absolute inset-0 z-[10]">
           {DESKTOP_ITEMS.map((item) => (
             <DesktopItem
               key={item.id}
@@ -298,6 +308,8 @@ export function Desktop() {
         </div>
 
         <Dock />
+
+        {showTour && <DesktopTour onFinish={finishTour} />}
       </motion.div>
 
       {/* ── Lock screen overlay ── */}
@@ -309,7 +321,9 @@ export function Desktop() {
             loadedImages={preloadCompleteCount}
             totalImages={PRELOAD_TOTAL}
             onUnlock={() => {
-              if (preloadReady) setLocked(false);
+              if (preloadReady) {
+                setLocked(false);
+              }
             }}
           />
         )}

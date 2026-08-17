@@ -30,6 +30,7 @@ export function Dock() {
 
   return (
     <div
+      data-tour="dock"
       className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[90] px-3 py-2 flex flex-row items-center gap-2 rounded-2xl"
       style={panelStyle}
       role="toolbar"

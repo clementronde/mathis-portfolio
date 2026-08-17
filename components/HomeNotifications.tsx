@@ -8,6 +8,7 @@ export function HomeNotifications() {
 
   return (
     <motion.div
+      data-tour="widgets"
       className="absolute left-3 sm:left-5 top-11 sm:top-14 z-0 flex w-[210px] sm:w-[260px] flex-col gap-2.5 select-none"
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
