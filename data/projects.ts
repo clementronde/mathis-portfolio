@@ -8,6 +8,9 @@ export interface Project {
   coverImage: string;
   images: string[];
   color: string;
+  // Infos reprises des commentaires de la maquette Figma
+  camera?: string;
+  instagram?: string[];
 }
 
 const p = (folder: string, ...files: string[]) =>
@@ -24,17 +27,19 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/18-08 COSTA RICA/DSC_0787_1.avif',
     images: p('18-08 COSTA RICA', 'DSC_0787_1.avif', 'DSC_0797_1.avif'),
     color: '#0a2e1a',
+    camera: 'Nikon D5300',
   },
   {
     id: 'havas',
     title: 'Havas',
     category: 'Événement',
     location: 'Paris, France',
-    year: 2019,
+    year: 2020,
     description: 'Reportage événementiel pour le groupe Havas. Ambiance corporate et portraits.',
     coverImage: '/images/projects/19-11 HAVAS/DSC_0006.avif',
     images: p('19-11 HAVAS', 'DSC_0006.avif', 'DSC_0010.avif', 'DSC_0011.avif', 'DSC_0025.avif', 'DSC_0034.avif'),
     color: '#1a1a2e',
+    camera: 'Nikon D5300',
   },
   {
     id: 'locmariaquer',
@@ -46,6 +51,7 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/21-10 Locmariaquer/DSC_0100.avif',
     images: p('21-10 Locmariaquer', 'DSC_0100.avif', 'DSC_0246.avif'),
     color: '#0f1f2e',
+    camera: 'Nikon D5300',
   },
   {
     id: '22-ans-mathis',
@@ -68,6 +74,10 @@ export const PROJECTS: Project[] = [
     coverImage: "/images/projects/22-08 Cap d_Agde/DSC_0065.avif",
     images: p("22-08 Cap d_Agde", 'DSC_0065.avif', 'DSC_0115.avif', 'DSC_0116.avif'),
     color: '#2e1a0a',
+    camera: 'Nikon D5300',
+    instagram: [
+      'https://www.instagram.com/p/ClO2MOnNAQw/',
+    ],
   },
   {
     id: 'maroc-2023',
@@ -79,6 +89,10 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/23-01 Maroc/DSC_0153.avif',
     images: p('23-01 Maroc', 'DSC_0153.avif', 'DSC_0185.avif', 'DSC_0292.avif'),
     color: '#2e1a00',
+    camera: 'Nikon D5300',
+    instagram: [
+      'https://www.instagram.com/p/CnNPEqJtRDI/',
+    ],
   },
   {
     id: 'louis-vuitton',
@@ -90,6 +104,10 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/23-06 Louis Vuitton/DSC_0040.avif',
     images: p('23-06 Louis Vuitton', 'DSC_0040.avif'),
     color: '#1a1200',
+    camera: 'Nikon D5300',
+    instagram: [
+      'https://www.instagram.com/p/CusOSLTtMVr/',
+    ],
   },
   {
     id: 'pouilles',
@@ -101,6 +119,10 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/23-07 Pouilles/DSC_0023.avif',
     images: p('23-07 Pouilles', 'DSC_0023.avif', 'DSC_0057.avif', 'DSC_0111_1.avif'),
     color: '#1a2e1a',
+    camera: 'Nikon D5300',
+    instagram: [
+      'https://www.instagram.com/p/CveieTgNRL5/',
+    ],
   },
   {
     id: 'ile-de-re-2023',
@@ -112,6 +134,10 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/23-08 Ile de Ré/DSC_0215.avif',
     images: p('23-08 Ile de Ré', 'DSC_0215.avif'),
     color: '#0a1e2e',
+    camera: 'Nikon D5300',
+    instagram: [
+      'https://www.instagram.com/p/CveiawCNS6X/',
+    ],
   },
   {
     id: 'ecole',
@@ -156,6 +182,10 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/24-08 ILE DE RE/MSA00126.avif',
     images: p('24-08 ILE DE RE', 'MSA00126.avif', 'MSA00275.avif', 'MSA00350.avif', 'MSA00421.avif'),
     color: '#0a1e2e',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DAOJhG6twk3/',
+    ],
   },
   {
     id: 'noclout',
@@ -167,6 +197,10 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/24-11-02 NOCLOUT/MSA00088.avif',
     images: p('24-11-02 NOCLOUT', 'MSA00088.avif', 'MSA00181.avif', 'MSA00206.avif', 'MSA00271.avif', 'MSA00485.avif', 'MSA00617.avif', 'MSA00683.avif'),
     color: '#0a0a0a',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DB7GQi6tDXn/',
+    ],
   },
   {
     id: 'shoot-ali',
@@ -184,11 +218,15 @@ export const PROJECTS: Project[] = [
     title: 'Marseille',
     category: 'Voyage',
     location: 'Marseille, France',
-    year: 2024,
+    year: 2025,
     description: "Marseille en hiver. Vieux-Port, lumière crue du Midi, calanques.",
     coverImage: '/images/projects/24-12-29 Marseille/MSA00090_1.avif',
     images: p('24-12-29 Marseille', 'MSA00090_1.avif', 'MSA00095_2.avif', 'MSA00132_1.avif'),
     color: '#1a1e2e',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DSKwAX6DAxh/',
+    ],
   },
   {
     id: 'berlin',
@@ -200,6 +238,10 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-02-20 BERLIN/MSA00807.avif',
     images: p('25-02-20 BERLIN', 'MSA00807.avif', 'MSA00876.avif', 'MSA00958_1.avif', 'MSA01033.avif'),
     color: '#0f0f0f',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DSKwHBbDBAG/',
+    ],
   },
   {
     id: 'maroc-2025',
@@ -211,6 +253,11 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-05 MAROC/MSA00173.avif',
     images: p('25-05 MAROC', 'MSA00173.avif', 'MSA00305.avif', 'MSA00511_1.avif'),
     color: '#2e1500',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DJ7ITKMsg92/',
+      'https://www.instagram.com/p/DJ7IY80MA54/',
+    ],
   },
   {
     id: 'anniv-gus',
@@ -233,6 +280,12 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-07-13 SHOOT_WALIM/MSA00056_2.avif',
     images: p('25-07-13 SHOOT_WALIM', 'MSA00056_2.avif', 'MSA00123.avif', 'MSA00230.avif', 'MSA00287.avif', 'MSA00358_4.avif'),
     color: '#1a1a1a',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DLvEG-2NbY6/',
+      'https://www.instagram.com/p/DLvEK8KNIFD/',
+      'https://www.instagram.com/p/DLvEDXBNeMx/',
+    ],
   },
   {
     id: 'otacos-lolla',
@@ -255,6 +308,11 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-07-25 SHOOT_LES RATS/MSA00016.avif',
     images: p('25-07-25 SHOOT_LES RATS', 'MSA00016.avif', 'MSA00105.avif', 'MSA00133.avif', 'MSA00156_1.avif', 'MSA00289.avif', 'MSA00591_1.avif', 'MSA00604.avif'),
     color: '#0a0a0f',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DMv7M8ZNoOL/',
+      'https://www.instagram.com/p/DMv7t5vtb4v/',
+    ],
   },
   {
     id: 'hendaye',
@@ -266,6 +324,10 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-08 Hendaye/MSA00085_2.avif',
     images: p('25-08 Hendaye', 'MSA00085_2.avif', 'MSA00097_2.avif'),
     color: '#0a1e2e',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DSKySifjIgx/',
+    ],
   },
   {
     id: 'expo-today',
@@ -277,6 +339,12 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-08-02 EXPO TO DAY_TOURNAGE/MSA00059.avif',
     images: p('25-08-02 EXPO TO DAY_TOURNAGE', 'MSA00059.avif', 'MSA00086.avif', 'MSA00092.avif', 'MSA00128.avif'),
     color: '#1a1a2e',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DOqXrmzDJ3W/',
+      'https://www.instagram.com/p/DOqXcJBDA5D/',
+      'https://www.instagram.com/p/DOqX3LxDHgJ/',
+    ],
   },
   {
     id: 'mariage-he',
@@ -293,6 +361,12 @@ export const PROJECTS: Project[] = [
       'MSA01173.avif', 'MSA01299.avif', 'MSA01347.avif', 'MSA01821_1.avif'
     ),
     color: '#1a1208',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DSiMW1kjafk/',
+      'https://www.instagram.com/p/DSiL2-RDR_p/',
+      'https://www.instagram.com/p/DSiMPcDDcwz/',
+    ],
   },
   {
     id: 'hrc-berck',
@@ -304,6 +378,12 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-09-27 HRC_BERCK/MSA00002_1.avif',
     images: p('25-09-27 HRC_BERCK', 'MSA00002_1.avif', 'MSA00020.avif', 'MSA00033_4.avif', 'MSA00118_4.avif', 'MSA00230_1.avif', 'MSA00249_1.avif'),
     color: '#0f1a0f',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DT7_eOPjFSf/',
+      'https://www.instagram.com/p/DT7_kUPjKMX/',
+      'https://www.instagram.com/p/DT7_XawDFnC/',
+    ],
   },
   {
     id: 'tbs-sete',
@@ -315,6 +395,11 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-10 TBS_SÈTE/MSA00004 2.avif',
     images: p('25-10 TBS_SÈTE', 'MSA00004 2.avif', 'MSA00038.avif', 'MSA00146.avif', 'MSA00203.avif', 'MSA00260.avif'),
     color: '#0a1e2e',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/reel/DWD1XyfjoQi/',
+      'https://www.instagram.com/reel/DWO7ZA0Cabd/',
+    ],
   },
   {
     id: 'heaven-alterants',
@@ -326,6 +411,7 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-10-17 HEAVEN_ALTERANTS/MSA00102.avif',
     images: p('25-10-17 HEAVEN_ALTERANTS', 'MSA00102.avif', 'V3 (1).avif'),
     color: '#1a0a2e',
+    camera: 'Sony A7 IV',
   },
   {
     id: 'expo-lv',
@@ -337,6 +423,7 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/25-12-15 EXPO LV/MSA00001_1.avif',
     images: p('25-12-15 EXPO LV', 'MSA00001_1.avif', 'MSA00018.avif', 'MSA00019.avif'),
     color: '#1a1200',
+    camera: 'Sony A7S III',
   },
   {
     id: 'noel-ayme',
@@ -359,6 +446,12 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/26-05 MOTOROLA/HEA00099.avif',
     images: p('26-05 MOTOROLA', 'HEA00099.avif', 'HEA00451_1.avif', 'HEA00510.avif', 'HEA00553.avif', 'HEA00569.avif', 'HEA00720.avif', 'HEA01051.avif', 'HEA01212.avif', 'HEA01318.avif', 'HEA01377.avif', 'HEA01557.avif'),
     color: '#1a1a1a',
+    camera: 'Sony A7 IV',
+    instagram: [
+      'https://www.instagram.com/p/DYhvbL-DeQT/',
+      'https://www.instagram.com/p/DaLOxcgDVn9/',
+      'https://www.instagram.com/p/DZp47ILDTg7/',
+    ],
   },
   {
     id: 'road-trip-spain',
@@ -370,6 +463,11 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/26-01 ROAD TRIP SPAIN/MSA00019.avif',
     images: p('26-01 ROAD TRIP SPAIN', 'MSA00019.avif', 'MSA00625.avif', 'MSA00754.avif', 'MSA00865.avif'),
     color: '#2e0a0a',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/p/DTiObLTDHGs/',
+      'https://www.instagram.com/p/DTiOPunjOat/',
+    ],
   },
   {
     id: 'marseille-2026',
@@ -381,6 +479,10 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/26-03-14 MARSEILLE/MSA00115.avif',
     images: p('26-03-14 MARSEILLE', 'MSA00115.avif', 'MSA00156.avif', 'MSA00368.avif', 'MSA00423.avif', 'MSA00429.avif', 'MSA00560.avif'),
     color: '#1a1e2e',
+    camera: 'Sony A7S III',
+    instagram: [
+      'https://www.instagram.com/reel/DWMbps3jMlq/',
+    ],
   },
   {
     id: 'lisboa',
@@ -392,6 +494,7 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/26-04-03 LISBOA/MSA00125.avif',
     images: p('26-04-03 LISBOA', 'MSA00125.avif', 'MSA00212.avif', 'MSA00269.avif', 'MSA00374.avif', 'MSA00432.avif', 'MSA00458.avif'),
     color: '#1a1e0a',
+    camera: 'Sony A7S III',
   },
   {
     id: 'dordogne',
@@ -403,6 +506,7 @@ export const PROJECTS: Project[] = [
     coverImage: '/images/projects/26-04-17 DORDOGNE/MSA00037.avif',
     images: p('26-04-17 DORDOGNE', 'MSA00037.avif', 'MSA00062.avif', 'MSA00119.avif', 'MSA00223.avif'),
     color: '#1e2a0a',
+    camera: 'Sony A7S III',
   },
 ];
 
@@ -415,12 +519,16 @@ export const PHOTO_COLLECTIONS: { id: PhotoCollection; label: string }[] = [
   { id: 'focus', label: 'Focus' },
 ];
 
-const FOCUS_CATEGORIES = ['Portrait', 'Marque'];
-const COLLECTION_OVERRIDES: Record<string, PhotoCollection> = {
-  'tbs-sete': 'focus',
-};
+// D'après les commentaires de la maquette Figma (page Photos) : tout le reste est en Chroniques
+const FOCUS_PROJECT_IDS = [
+  'shoot-les-rats',   // Campagne - Shooting, Auvergne
+  'shoot-walim',      // Street - Shooting, Paris
+  'shoot-ali',        // absent de Figma, classé avec les autres shoots
+  'heaven-alterants', // Heaven - Welcome
+  'tbs-sete',
+  'motorola',
+];
 
 export function getProjectCollection(project: Project): PhotoCollection {
-  return COLLECTION_OVERRIDES[project.id]
-    ?? (FOCUS_CATEGORIES.includes(project.category) ? 'focus' : 'chroniques');
+  return FOCUS_PROJECT_IDS.includes(project.id) ? 'focus' : 'chroniques';
 }

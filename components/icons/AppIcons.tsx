@@ -14,7 +14,9 @@ const ICON_FILES: Partial<Record<AppId, string>> = {
   premiere: '/images/icons/premiereproicon.png',
 };
 
-const FULL_BLEED_ICONS: Set<AppId> = new Set();
+// Icônes sans marge transparente : on ajoute ~10 % de marge pour s'aligner visuellement
+// sur les autres icônes du dock (dont la marge inclut une ombre)
+const FULL_BLEED_ICONS: Set<AppId> = new Set(['maps']);
 
 function IconWithFallback({
   id,
@@ -30,7 +32,7 @@ function IconWithFallback({
 
   if (failed || !src) return <>{fallback}</>;
 
-  const pad = FULL_BLEED_ICONS.has(id) ? Math.round(size * 0.12) : 0;
+  const pad = FULL_BLEED_ICONS.has(id) ? Math.round(size * 0.1) : 0;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element

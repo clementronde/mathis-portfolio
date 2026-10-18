@@ -7,7 +7,7 @@ import { AppIcon } from './icons/AppIcons';
 import { PROJECTS, PHOTO_COLLECTIONS, getProjectCollection, type PhotoCollection } from '@/data/projects';
 import { encodeSrc } from '@/utils/path';
 import { useWindowStore } from '@/store/useWindowStore';
-import { Aperture, BookOpen, ChevronLeft, ChevronRight, ImageIcon, Minus, Plus, X } from 'lucide-react';
+import { Aperture, ArrowUpRight, BookOpen, ChevronLeft, ChevronRight, ImageIcon, Minus, Plus, X } from 'lucide-react';
 
 // Le dossier de chaque projet commence par sa date (AA-MM…) : on trie du plus récent au plus ancien
 const projectFolder = (src: string) => src.split('/')[3] ?? '';
@@ -29,6 +29,8 @@ const ALL_PHOTOS = PROJECTS_NEWEST_FIRST.flatMap((proj) =>
       location: proj.location,
       year: proj.year,
       description: proj.description,
+      camera: proj.camera,
+      instagram: proj.instagram ?? [],
       key: `${proj.id}-${i}`,
     }))
 );
@@ -444,6 +446,26 @@ function PhotoDetails({
               </dd>
             </div>
             <div><dt>Lieu</dt><dd>{photo.location}</dd></div>
+            {photo.camera && <div><dt>Appareil</dt><dd>{photo.camera}</dd></div>}
+            {photo.instagram.length > 0 && (
+              <div>
+                <dt>Instagram</dt>
+                <dd className="photos-detail-links">
+                  {photo.instagram.map((url, index) => (
+                    <a
+                      key={url}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="photos-detail-album-link"
+                    >
+                      {photo.instagram.length > 1 ? `Post ${index + 1}` : 'Voir le post'}
+                      <ArrowUpRight size={11} aria-hidden="true" />
+                    </a>
+                  ))}
+                </dd>
+              </div>
+            )}
             <div><dt>Format</dt><dd>Image · {fileFormat(photo.src)}</dd></div>
           </dl>
         </div>
