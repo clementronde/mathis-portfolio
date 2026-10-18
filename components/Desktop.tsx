@@ -129,7 +129,16 @@ export function Desktop() {
   const [preloadCompleteCount, setPreloadCompleteCount] = useState(0);
   const [preloadReady, setPreloadReady] = useState(false);
   const [showTour, setShowTour] = useState(false);
-  const finishTour = useCallback(() => setShowTour(false), []);
+  // À la fin de la visite, l'icône Photos du dock est mise en avant jusqu'à son ouverture
+  const [photosHint, setPhotosHint] = useState(false);
+  const finishTour = useCallback(() => {
+    setShowTour(false);
+    setPhotosHint(true);
+  }, []);
+  const photosOpen = openWindows.includes('photos');
+  useEffect(() => {
+    if (photosOpen) setPhotosHint(false);
+  }, [photosOpen]);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -290,7 +299,7 @@ export function Desktop() {
           </div>
         </div>
 
-        <Dock />
+        <Dock highlightPhotos={photosHint && !showTour} onPhotosClick={() => setPhotosHint(false)} />
 
         {showTour && <DesktopTour onFinish={finishTour} />}
       </motion.div>

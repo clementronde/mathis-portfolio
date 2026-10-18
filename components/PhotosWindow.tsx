@@ -7,7 +7,7 @@ import { AppIcon } from './icons/AppIcons';
 import { PROJECTS, PHOTO_COLLECTIONS, getProjectCollection, type PhotoCollection } from '@/data/projects';
 import { encodeSrc } from '@/utils/path';
 import { useWindowStore } from '@/store/useWindowStore';
-import { Aperture, ArrowUpRight, BookOpen, ChevronLeft, ChevronRight, ImageIcon, Minus, Plus, X } from 'lucide-react';
+import { Aperture, BookOpen, ChevronLeft, ChevronRight, ImageIcon, Minus, Plus, X } from 'lucide-react';
 
 // Le dossier de chaque projet commence par sa date (AA-MM…) : on trie du plus récent au plus ancien
 const projectFolder = (src: string) => src.split('/')[3] ?? '';
@@ -35,6 +35,13 @@ const ALL_PHOTOS = PROJECTS_NEWEST_FIRST.flatMap((proj) =>
     }))
 );
 
+// Bibliothèque et collections : une seule photo (la couverture) par projet
+const PROJECT_COVERS = PROJECTS_NEWEST_FIRST.flatMap((proj) => {
+  const photos = ALL_PHOTOS.filter((photo) => photo.projectId === proj.id);
+  const cover = photos.find((photo) => photo.src === proj.coverImage) ?? photos[0];
+  return cover ? [cover] : [];
+});
+
 const ZOOM_MIN = 0;
 const ZOOM_MAX = 5;
 const DEFAULT_ZOOM = 2;
@@ -49,7 +56,7 @@ export function PhotosWindow() {
   const photosNavigationVersion = useWindowStore((state) => state.photosNavigationVersion);
   const [selectedProject, setSelectedProject] = useState<string | null>(photosAlbum);
   const [selectedCollection, setSelectedCollection] = useState<PhotoCollection | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [viewer, setViewer] = useState<{ projectId: string; index: number } | null>(null);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
   const [isMobile, setIsMobile] = useState(false);
   const windowContentRef = useRef<HTMLDivElement>(null);
@@ -66,7 +73,7 @@ export function PhotosWindow() {
   useEffect(() => {
     setSelectedProject(photosAlbum);
     setSelectedCollection(null);
-    setLightboxIndex(null);
+    setViewer(null);
   }, [photosAlbum, photosNavigationVersion]);
 
   const wheelZoomDeltaRef = useRef(0);
@@ -77,8 +84,19 @@ export function PhotosWindow() {
   const filtered = selectedProject
     ? ALL_PHOTOS.filter((p) => p.projectId === selectedProject)
     : selectedCollection
-      ? ALL_PHOTOS.filter((p) => p.collection === selectedCollection)
-      : ALL_PHOTOS;
+      ? PROJECT_COVERS.filter((p) => p.collection === selectedCollection)
+      : PROJECT_COVERS;
+  // La visionneuse fait défiler toutes les photos du projet de la photo ouverte
+  const viewerPhotos = viewer ? ALL_PHOTOS.filter((p) => p.projectId === viewer.projectId) : [];
+  const openViewer = (photo: GalleryPhoto) => {
+    const photos = ALL_PHOTOS.filter((p) => p.projectId === photo.projectId);
+    setViewer({ projectId: photo.projectId, index: Math.max(0, photos.findIndex((p) => p.key === photo.key)) });
+  };
+  const stepViewer = (direction: -1 | 1) =>
+    setViewer((current) => current && {
+      ...current,
+      index: (current.index + direction + viewerPhotos.length) % viewerPhotos.length,
+    });
 
   const currentProject = PROJECTS.find((p) => p.id === selectedProject);
   const currentCollection = PHOTO_COLLECTIONS.find((c) => c.id === selectedCollection);
@@ -254,7 +272,7 @@ export function PhotosWindow() {
               {currentProject ? currentProject.title : currentCollection ? currentCollection.label : 'Bibliothèque'}
             </span>
             <span className={`${isMobile ? 'text-[11px]' : 'text-[14px]'} ml-1 shrink-0`} style={{ color: 'rgba(0,0,0,0.35)' }}>
-              · {filtered.length}
+              · {filtered.length} {selectedProject ? 'photos' : 'projets'}
             </span>
             <div className="ml-auto flex shrink-0 items-center gap-1.5" style={{ color: 'rgba(0,0,0,0.52)' }}>
               <button
@@ -305,7 +323,7 @@ export function PhotosWindow() {
                 {filtered.map((photo, idx) => (
                   <button
                     key={photo.key}
-                    onClick={() => setLightboxIndex(idx)}
+                    onClick={() => openViewer(photo)}
                     aria-label={`${photo.projectTitle}, photo ${idx + 1}`}
                     className="photos-masonry-tile"
                     style={{ background: photo.color }}
@@ -329,19 +347,17 @@ export function PhotosWindow() {
         </div>
       </div>
 
-      {lightboxIndex !== null && (
-        <PhotoDetails
-          photos={filtered}
-          current={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-          onPrev={() => setLightboxIndex((i) => (i! - 1 + filtered.length) % filtered.length)}
-          onNext={() => setLightboxIndex((i) => (i! + 1) % filtered.length)}
-          onOpenAlbum={(projectId) => {
-            setLightboxIndex(null);
-            setSelectedProject(projectId);
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {viewer && viewerPhotos[viewer.index] && (
+          <PhotoViewer
+            photo={viewerPhotos[viewer.index]}
+            hasSiblings={viewerPhotos.length > 1}
+            onClose={() => setViewer(null)}
+            onPrev={() => stepViewer(-1)}
+            onNext={() => stepViewer(1)}
+          />
+        )}
+      </AnimatePresence>
     </Window>
   );
 }
@@ -349,29 +365,36 @@ export function PhotosWindow() {
 type GalleryPhoto = (typeof ALL_PHOTOS)[number];
 
 function fileName(src: string) {
-  return decodeURIComponent(src.split('/').pop() ?? 'Photo').replace(/\.[^.]+$/, '');
+  return decodeURIComponent(src.split('/').pop() ?? 'Photo');
 }
 
 function fileFormat(src: string) {
-  return (src.split('.').pop() ?? 'image').toUpperCase();
+  return (src.split('.').pop() ?? 'image').toLowerCase();
 }
 
-function PhotoDetails({
-  photos,
-  current,
+function formatFileSize(bytes: number) {
+  return `${(bytes / 1024 / 1024).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} Mo`;
+}
+
+// Le lieu affiché est la ville seule ("Paris, France" → "Paris")
+function city(location: string) {
+  return location.split(',')[0].trim();
+}
+
+function PhotoViewer({
+  photo,
+  hasSiblings,
   onClose,
   onPrev,
   onNext,
-  onOpenAlbum,
 }: {
-  photos: GalleryPhoto[];
-  current: number;
+  photo: GalleryPhoto;
+  hasSiblings: boolean;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
-  onOpenAlbum: (projectId: string) => void;
 }) {
-  const photo = photos[current];
+  const [fileSize, setFileSize] = useState<number | null>(null);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -383,100 +406,81 @@ function PhotoDetails({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, onNext, onPrev]);
 
+  // Poids du fichier lu dans l'en-tête HTTP, sans retélécharger l'image
   useEffect(() => {
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = previous; };
-  }, []);
+    let cancelled = false;
+    setFileSize(null);
+    fetch(encodeSrc(photo.src), { method: 'HEAD' })
+      .then((response) => {
+        const length = Number(response.headers.get('content-length'));
+        if (!cancelled && length > 0) setFileSize(length);
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [photo.src]);
 
   return createPortal(
     <motion.div
-      className="photos-detail-overlay"
+      className="photo-viewer"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label={`Informations de ${fileName(photo.src)}`}
+      aria-label={fileName(photo.src)}
     >
-      <div className="photos-detail-backdrop" aria-hidden="true">
-        {photos.slice(0, 24).map((item, index) => (
-          <div className={`photos-detail-backdrop-tile photos-detail-backdrop-tile--${index % 7}`} key={item.key}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={encodeSrc(item.src)} alt="" />
-          </div>
-        ))}
-      </div>
-      <div className="photos-detail-veil" aria-hidden="true" />
-
-      <motion.article
-        className="photos-detail-card"
-        initial={{ y: 28, scale: 0.96 }}
-        animate={{ y: 0, scale: 1 }}
+      <motion.div
+        className="photo-viewer-frame"
+        initial={{ scale: 0.96, y: 12 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.97, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 340, damping: 30 }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="photos-detail-lights" aria-hidden="true"><i /><i /><i /></div>
-        <button className="photos-detail-close" onClick={onClose} aria-label="Fermer"><X size={16} /></button>
-
-        <motion.div key={photo.key} className="photos-detail-image-wrap" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <div className="photo-viewer-media">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={encodeSrc(photo.src)} alt={`${photo.projectTitle} — ${photo.location}`} />
-        </motion.div>
+          <img key={photo.key} src={encodeSrc(photo.src)} alt={`${photo.projectTitle} — ${photo.location}`} />
+        </div>
 
-        <div className="photos-detail-copy">
-          <p className="photos-detail-kicker">{photo.collection === 'focus' ? 'Focus' : 'Chroniques'} · {current + 1}/{photos.length}</p>
+        <div className="photo-viewer-details">
           <h2>{fileName(photo.src)}</h2>
-          <p className="photos-detail-description">{photo.description}</p>
+          <p>Image {fileFormat(photo.src)}{fileSize ? ` · ${formatFileSize(fileSize)}` : ''}</p>
           <dl>
             <div><dt>Année</dt><dd>{photo.year}</dd></div>
-            <div>
-              <dt>Album</dt>
-              <dd>
-                <button
-                  type="button"
-                  className="photos-detail-album-link"
-                  onClick={() => onOpenAlbum(photo.projectId)}
-                  aria-label={`Ouvrir l’album ${photo.projectTitle} `}
-                >
-                  {photo.projectTitle}
-                  <ChevronRight size={11} aria-hidden="true" />
-                </button>
-              </dd>
-            </div>
-            <div><dt>Lieu</dt><dd>{photo.location}</dd></div>
+            <div><dt>{photo.collection === 'focus' ? 'Marque' : 'Projet'}</dt><dd>{photo.projectTitle}</dd></div>
+            <div><dt>Lieu</dt><dd>{city(photo.location)}</dd></div>
             {photo.camera && <div><dt>Appareil</dt><dd>{photo.camera}</dd></div>}
             {photo.instagram.length > 0 && (
               <div>
                 <dt>Instagram</dt>
-                <dd className="photos-detail-links">
+                <dd>
                   {photo.instagram.map((url, index) => (
-                    <a
-                      key={url}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="photos-detail-album-link"
-                    >
-                      {photo.instagram.length > 1 ? `Post ${index + 1}` : 'Voir le post'}
-                      <ArrowUpRight size={11} aria-hidden="true" />
+                    <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                      {photo.instagram.length > 1 ? `Voir ici ${index + 1}` : 'Voir ici'}
                     </a>
                   ))}
                 </dd>
               </div>
             )}
-            <div><dt>Format</dt><dd>Image · {fileFormat(photo.src)}</dd></div>
           </dl>
         </div>
 
-        {photos.length > 1 && (
-          <div className="photos-detail-nav">
-            <button onClick={onPrev} aria-label="Photo précédente"><ChevronLeft size={18} /></button>
-            <button onClick={onNext} aria-label="Photo suivante"><ChevronRight size={18} /></button>
-          </div>
+        <button type="button" className="photo-viewer-control photo-viewer-close" onClick={onClose} aria-label="Fermer">
+          <X size={16} />
+        </button>
+        {hasSiblings && (
+          <>
+            <button type="button" className="photo-viewer-control photo-viewer-prev" onClick={onPrev} aria-label="Photo précédente">
+              <ChevronLeft size={18} />
+            </button>
+            <button type="button" className="photo-viewer-control photo-viewer-next" onClick={onNext} aria-label="Photo suivante">
+              <ChevronRight size={18} />
+            </button>
+          </>
         )}
-      </motion.article>
+      </motion.div>
     </motion.div>,
     document.body
   );
