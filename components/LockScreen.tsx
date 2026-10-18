@@ -6,8 +6,7 @@ import { encodeSrc } from '@/utils/path';
 
 // Intro : le texte d'accueil au centre, entouré de photos qui viennent vers nous en 3D,
 // puis tout s'efface avant que le fond de verrouillage apparaisse
-// Deux lignes de longueurs différentes : un titre court puis une phrase plus longue et plus légère,
-// pour éviter l'effet de bloc carré
+// Deux lignes de longueurs différentes, dans le même style, pour éviter l'effet de bloc carré
 const INTRO_LINES = ['Bienvenue sur mon portfolio,', 'balade-toi dans mon univers pour découvrir mon travail'];
 const INTRO_DURATION_MS = 5300;
 const SHOW_INTRO = true;
@@ -70,7 +69,6 @@ function TypedIntroText() {
           <span
             key={line}
             className="block"
-            style={index === 0 ? undefined : { marginTop: '0.5em', fontSize: '0.5em', fontWeight: 500, color: '#3a3a3c', letterSpacing: '-0.005em' }}
             aria-hidden="true"
           >
             {line.slice(0, visible)}
@@ -194,7 +192,7 @@ function IntroScene() {
           // Calque à part pour que le texte reste au-dessus des photos en 3D
           transform: 'translateZ(0)',
           color: '#111111',
-          fontSize: 'clamp(26px, 3.8vw, 60px)',
+          fontSize: 'clamp(20px, 2.7vw, 44px)',
           lineHeight: 1.1,
           letterSpacing: '-0.02em',
           // Halo couleur fond net (pas de flou d'arrière-plan) pour détacher le texte des photos
