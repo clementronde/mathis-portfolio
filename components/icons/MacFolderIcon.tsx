@@ -30,6 +30,9 @@ export function MacFolderIcon({ size = 72 }: { size?: number }) {
         d="M4 9a5 5 0 0 1 5-5h24.5a5 5 0 0 1 3.6 1.5L41 9.5a5 5 0 0 0 3.6 1.5H91a5 5 0 0 1 5 5v55a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Z"
         fill={`url(#${backId})`}
       />
+      {/* Feuille blanche qui dépasse entre le fond et la face avant */}
+      <rect x="9" y="13.5" width="82" height="20" rx="2.5" fill="#ffffff" />
+      <rect x="9" y="13.5" width="82" height="20" rx="2.5" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="0.6" />
       <rect x="4" y="18" width="92" height="58" rx="5" fill={`url(#${frontId})`} />
       <path d="M9 18.6h82" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
