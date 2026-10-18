@@ -3,9 +3,12 @@ import { useRef, type RefObject } from 'react';
 import { motion, useMotionValue, type PanInfo } from 'framer-motion';
 import { Folder } from 'lucide-react';
 import { encodeSrc } from '@/utils/path';
+import { MacFolderIcon } from '@/components/icons/MacFolderIcon';
 
 interface DesktopItemProps {
   label: string;
+  // Ligne sous le nom des dossiers, ex. « 6 éléments »
+  subtitle?: string;
   imageSrc?: string;
   imageColor?: string;
   rotate?: number;
@@ -22,6 +25,7 @@ interface DesktopItemProps {
 
 export function DesktopItem({
   label,
+  subtitle,
   imageSrc,
   imageColor = '#2a2a2a',
   rotate = 0,
@@ -40,6 +44,8 @@ export function DesktopItem({
   const clickBlockTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+  // Dossier façon Finder macOS : icône rouge dessinée, nom et nombre d'éléments dessous
+  const isMacFolder = type === 'folder' && imageColor === 'transparent';
 
   function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (wasDragged.current) {
@@ -96,6 +102,18 @@ export function DesktopItem({
       data-scrollytelling-ignore="true"
       data-finder-select={finderSelectHover ? 'true' : undefined}
     >
+      {isMacFolder ? (
+        <>
+          <MacFolderIcon size={width} />
+          <span className="flex flex-col items-center leading-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.7)' }}>
+            <span className="text-white text-[13px] font-medium" style={{ maxWidth: width + 40, textAlign: 'center' }}>
+              {label}
+            </span>
+            {subtitle && <span className="text-[12px]" style={{ color: '#3d9bff' }}>{subtitle}</span>}
+          </span>
+        </>
+      ) : (
+      <>
       {/* Image / folder / map */}
       <div
         style={{
@@ -214,6 +232,8 @@ export function DesktopItem({
       >
         {label}
       </span>
+      </>
+      )}
     </motion.button>
   );
 }

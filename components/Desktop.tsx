@@ -5,7 +5,7 @@ import { useWindowStore } from '@/store/useWindowStore';
 import { HomeNotifications } from './HomeNotifications';
 import { Dock } from './Dock';
 import { DesktopItem } from './DesktopItem';
-import { FinderWindow } from './FinderWindow';
+import { DESKTOP_FOLDER_PREFIX, FinderWindow, RECENT_DOCUMENT_PROJECT_COUNT } from './FinderWindow';
 import { MailWindow } from './MailWindow';
 import { NotesWindow } from './NotesWindow';
 import { PhotosWindow } from './PhotosWindow';
@@ -242,6 +242,11 @@ export function Desktop() {
             <DesktopItem
               key={item.id}
               label={item.label}
+              subtitle={
+                item.action.type === 'finder' && item.action.folder === 'projets-recents'
+                  ? `${RECENT_DOCUMENT_PROJECT_COUNT} éléments`
+                  : undefined
+              }
               imageSrc={item.imageSrc}
               imageColor={item.imageColor}
               rotate={item.rotate}
@@ -269,7 +274,9 @@ export function Desktop() {
                 }
 
                 if (item.action.type === 'photos') {
-                  openPhotosAlbum(item.action.album ?? null);
+                  // Sur ordinateur, la photo ouvre le dossier Bureau du Finder ; sur mobile, l'album Photos
+                  if (isMobile) openPhotosAlbum(item.action.album ?? null);
+                  else openWindow('finder', `${DESKTOP_FOLDER_PREFIX}${item.id}`);
                   return;
                 }
 

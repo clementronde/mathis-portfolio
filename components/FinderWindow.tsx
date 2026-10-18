@@ -9,20 +9,16 @@ import { NOTES, type Note } from '@/data/notes';
 import { DESKTOP_ITEMS, type DesktopItemConfig } from '@/data/desktopItems';
 import { useWindowStore, FINDER_SECTION_IDS, type RecentItem, type FinderSectionId } from '@/store/useWindowStore';
 import { AppIcon } from './icons/AppIcons';
+import { MacFolderIcon } from './icons/MacFolderIcon';
+import { PhotoViewer, getProjectGalleryPhotos } from './PhotosWindow';
 import { encodeSrc } from '@/utils/path';
 
 /* ─── Mac-style folder icon ───────────────── */
 function FolderIcon({ size = 72 }: { coverImage?: string; color?: string; size?: number }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/images/icons/folder-with-paper.svg"
-      alt=""
-      width={size}
-      height={size}
-      style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
-      draggable={false}
-    />
+    <span style={{ display: 'grid', width: size, height: size, placeItems: 'center' }}>
+      <MacFolderIcon size={size} />
+    </span>
   );
 }
 
@@ -30,6 +26,7 @@ function FolderIcon({ size = 72 }: { coverImage?: string; color?: string; size?:
 function DesktopItemThumb({ item, size = 72 }: { item: DesktopItemConfig; size?: number }) {
   const isVideo = /\.(mp4|webm)$/i.test(item.imageSrc);
   const isFolderPng = item.type === 'folder' && item.imageColor === 'transparent';
+  if (isFolderPng) return <FolderIcon size={size} />;
 
   return (
     <div
@@ -97,6 +94,12 @@ const DOCUMENTS_ROOT_ITEMS = [
 
 // Dossier spécial ouvert depuis l'icône "Derniers projets" du bureau
 const RECENT_PROJECTS_FOLDER = 'projets-recents';
+
+// Dossier « desktop:<id> » : ouvre la section Bureau avec cet élément sélectionné
+export const DESKTOP_FOLDER_PREFIX = 'desktop:';
+function getDesktopFolderItemId(folder: string | null) {
+  return folder?.startsWith(DESKTOP_FOLDER_PREFIX) ? folder.slice(DESKTOP_FOLDER_PREFIX.length) : null;
+}
 
 const CV_FILE_LABEL = 'CV de Mathis Straebler';
 
@@ -210,6 +213,7 @@ const RECENT_DOCUMENT_PROJECTS: RecentDocumentProject[] = [
     links: [{ label: 'Réseaux sociaux', url: ig('reel/DWMbps3jMlq') }],
   },
 ];
+export const RECENT_DOCUMENT_PROJECT_COUNT = RECENT_DOCUMENT_PROJECTS.length;
 
 function openExternal(url: string) {
   window.open(url.startsWith('/') ? encodeSrc(url) : url, '_blank', 'noopener,noreferrer');
@@ -302,11 +306,11 @@ function ProjectFolderGrid({
           className="flex flex-col items-center gap-1.5 group outline-none"
         >
           <FolderIcon coverImage={p.coverImage} color={p.color} size={80} />
-          <span className="text-[10px] text-center leading-tight max-w-[90px] truncate transition-colors"
-            style={{ color: 'rgba(0,0,0,0.6)' }}>
+          <span className="text-[12px] text-center leading-tight max-w-[100px] truncate"
+            style={{ color: '#1d1d1f' }}>
             {p.title}
           </span>
-          <span className="text-[8px]" style={{ color: 'rgba(0,0,0,0.3)' }}>{p.images.length} photos</span>
+          <span className="text-[11px] leading-tight" style={{ color: '#0a84ff' }}>{p.images.length} éléments</span>
         </motion.button>
       ))}
     </>
@@ -503,6 +507,7 @@ export function FinderWindow() {
     const proj = findFinderProject(finderFolder);
     if (proj) return getProjectSection(proj) ?? 'documents';
     if (finderFolder && isFinderSection(finderFolder)) return finderFolder;
+    if (getDesktopFolderItemId(finderFolder)) return 'desktop';
     if (finderFolder === RECENT_PROJECTS_FOLDER) return 'documents';
     return 'documents';
   });
@@ -512,6 +517,9 @@ export function FinderWindow() {
     () => finderFolder === RECENT_PROJECTS_FOLDER ? 'projets-recents' : 'cv'
   );
   const [recentDocumentProjectId, setRecentDocumentProjectId] = useState<string | null>(null);
+  // Élément du Bureau sélectionné : ses photos s'affichent dans une colonne à droite, sans quitter le Finder
+  const [desktopSelectedId, setDesktopSelectedId] = useState<string | null>(() => getDesktopFolderItemId(finderFolder));
+  const [desktopLightboxIndex, setDesktopLightboxIndex] = useState<number | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -523,8 +531,17 @@ export function FinderWindow() {
   }, []);
 
   useEffect(() => {
+    setDesktopSelectedId(null);
+    const desktopItemId = getDesktopFolderItemId(finderFolder);
     const proj = findFinderProject(finderFolder);
-    if (proj) {
+    if (desktopItemId) {
+      // Photo cliquée sur le bureau : section Bureau, ses photos dans la colonne de droite
+      setSelectedProject(null);
+      setActiveSection('desktop');
+      setActiveImageIndex(0);
+      setDocumentsSelected('cv');
+      setDesktopSelectedId(desktopItemId);
+    } else if (proj) {
       setSelectedProject(proj);
       setActiveSection(getProjectSection(proj) ?? 'documents');
       setActiveImageIndex(0);
@@ -557,6 +574,7 @@ export function FinderWindow() {
 
   function openSection(section: FinderSection) {
     setActiveSection(section);
+    setDesktopSelectedId(null);
     setSelectedProject(null);
     setActiveImageIndex(0);
     setDocumentsSelected('cv');
@@ -573,6 +591,11 @@ export function FinderWindow() {
     }
 
     if (item.action.type === 'photos') {
+      // Sur ordinateur, les photos du projet s'ouvrent dans une colonne du Finder
+      if (!isMobile && activeSection === 'desktop' && !selectedProject) {
+        setDesktopSelectedId(item.id);
+        return;
+      }
       openPhotosAlbum(item.action.album ?? null);
       return;
     }
@@ -618,6 +641,12 @@ export function FinderWindow() {
     .filter((item): item is ResolvedRecentItem => item !== null);
   const recentDocumentProject = RECENT_DOCUMENT_PROJECTS.find((project) => project.id === recentDocumentProjectId) ?? null;
   const isRecentDocumentsView = activeSection === 'documents' && documentsSelected === 'projets-recents';
+  const desktopSelectedItem = DESKTOP_ITEMS.find((item) => item.id === desktopSelectedId) ?? null;
+  const desktopSelectedProject = desktopSelectedItem?.action.type === 'photos'
+    ? PROJECTS.find((project) => project.id === (desktopSelectedItem.action as { album?: string }).album) ?? null
+    : null;
+  const isDesktopProjectView = activeSection === 'desktop' && !!desktopSelectedProject;
+  const desktopProjectPhotos = desktopSelectedProject ? getProjectGalleryPhotos(desktopSelectedProject.id) : [];
 
   return (
     <Window
@@ -627,7 +656,7 @@ export function FinderWindow() {
       chrome="frameless"
       defaultSize={{ width: 860, height: 580 }}
     >
-      <div className="flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
+      <div className="relative flex h-full" style={{ background: '#ffffff', color: '#1d1d1f' }}>
 
         {/* ── Sidebar ── */}
         <div
@@ -829,7 +858,7 @@ export function FinderWindow() {
                           key={item.id}
                           onClick={() => openDesktopItem(item)}
                           className={`w-full ${isMobile ? 'h-[38px] gap-2' : 'h-[54px] gap-3'} px-2 flex items-center rounded-md text-left transition-colors`}
-                          style={{ background: index === 0 ? 'rgba(0,0,0,0.06)' : 'transparent' }}
+                          style={{ background: (desktopSelectedId ? item.id === desktopSelectedId : index === 0) ? 'rgba(0,0,0,0.06)' : 'transparent' }}
                         >
                           <DesktopItemThumb item={item} size={isMobile ? 22 : 34} />
                           <span className={`${isMobile ? 'text-[11px]' : 'text-[15px]'} font-semibold truncate`}>{item.label}</span>
@@ -904,7 +933,7 @@ export function FinderWindow() {
                       <div className="w-px h-full" style={{ background: 'rgba(0,0,0,0.08)' }} />
                       <div
                         className={`flex-1 min-w-0 ${
-                          isRecentDocumentsView
+                          isRecentDocumentsView || isDesktopProjectView
                             ? 'flex items-stretch'
                             : 'px-10 pb-12 flex items-center justify-center'
                         }`}
@@ -925,6 +954,31 @@ export function FinderWindow() {
                         ) : activeSection === 'recents' ? (
                           <div className="text-[14px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
                             Aucun élément récent
+                          </div>
+                        ) : isDesktopProjectView && desktopSelectedProject ? (
+                          <div className="flex-1 min-w-0 overflow-y-auto px-6 pt-6 pb-10">
+                            <div className="mb-4 flex items-baseline gap-2">
+                              <span className="text-[15px] font-semibold">{desktopSelectedProject.title}</span>
+                              <span className="text-[12px]" style={{ color: '#0a84ff' }}>
+                                {desktopSelectedProject.images.length} éléments
+                              </span>
+                            </div>
+                            <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))' }}>
+                              {desktopSelectedProject.images.map((img, i) => (
+                                <motion.button
+                                  key={img}
+                                  type="button"
+                                  onClick={() => setDesktopLightboxIndex(i)}
+                                  aria-label={`Agrandir la photo ${i + 1}`}
+                                  whileHover={{ scale: 1.02 }}
+                                  className="aspect-square overflow-hidden rounded-md outline-none"
+                                  style={{ background: desktopSelectedProject.color }}
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={encodeSrc(img)} alt="" loading="lazy" className="h-full w-full object-cover" draggable={false} />
+                                </motion.button>
+                              ))}
+                            </div>
                           </div>
                         ) : activeSection === 'desktop' ? (
                           <div className="flex flex-wrap gap-6 justify-center">
@@ -1001,6 +1055,19 @@ export function FinderWindow() {
           onNext={() => setLightboxIndex((i) => (i! + 1) % selectedProject.images.length)}
         />
       )}
+
+      {/* Plein écran avec les détails au survol, comme dans Photos */}
+      <AnimatePresence>
+        {desktopLightboxIndex !== null && desktopProjectPhotos[desktopLightboxIndex] && (
+          <PhotoViewer
+            photo={desktopProjectPhotos[desktopLightboxIndex]}
+            hasSiblings={desktopProjectPhotos.length > 1}
+            onClose={() => setDesktopLightboxIndex(null)}
+            onPrev={() => setDesktopLightboxIndex((i) => (i! - 1 + desktopProjectPhotos.length) % desktopProjectPhotos.length)}
+            onNext={() => setDesktopLightboxIndex((i) => (i! + 1) % desktopProjectPhotos.length)}
+          />
+        )}
+      </AnimatePresence>
 
       {desktopItemLightboxSrc && (
         <Lightbox

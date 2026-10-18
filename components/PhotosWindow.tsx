@@ -15,12 +15,25 @@ const PROJECTS_NEWEST_FIRST = [...PROJECTS].sort((a, b) =>
   projectFolder(b.coverImage).localeCompare(projectFolder(a.coverImage))
 );
 
+// Nom affiché d'une photo : titre du projet sans accents ni ponctuation + numéro, ex. « Costa_Rica_01.avif »
+function photoDisplayName(projectTitle: string, index: number, src: string) {
+  const base = projectTitle
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/['’]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  const ext = (src.split('.').pop() ?? 'jpg').toLowerCase();
+  return `${base}_${String(index + 1).padStart(2, '0')}.${ext}`;
+}
+
 // Flatten all project images into a single list, tagged by project id
 const ALL_PHOTOS = PROJECTS_NEWEST_FIRST.flatMap((proj) =>
   proj.images
     .filter((img) => /\.(avif|jpg|jpeg|JPG|webp|png)$/i.test(img))
     .map((img, i) => ({
       src: img,
+      name: photoDisplayName(proj.title, i, img),
       color: proj.color,
       projectId: proj.id,
       projectTitle: proj.title,
@@ -364,8 +377,9 @@ export function PhotosWindow() {
 
 type GalleryPhoto = (typeof ALL_PHOTOS)[number];
 
-function fileName(src: string) {
-  return decodeURIComponent(src.split('/').pop() ?? 'Photo');
+// Toutes les photos d'un projet avec leurs infos, pour ouvrir la visionneuse ailleurs (Finder)
+export function getProjectGalleryPhotos(projectId: string) {
+  return ALL_PHOTOS.filter((photo) => photo.projectId === projectId);
 }
 
 function fileFormat(src: string) {
@@ -381,7 +395,7 @@ function city(location: string) {
   return location.split(',')[0].trim();
 }
 
-function PhotoViewer({
+export function PhotoViewer({
   photo,
   hasSiblings,
   onClose,
@@ -395,6 +409,19 @@ function PhotoViewer({
   onNext: () => void;
 }) {
   const [fileSize, setFileSize] = useState<number | null>(null);
+  // Proportions de la photo : le calque des détails épouse l'image, pas les bords noirs
+  const [ratio, setRatio] = useState<number | null>(null);
+  useEffect(() => setRatio(null), [photo.src]);
+  const imageBoxStyle: React.CSSProperties = !ratio
+    ? { width: '100%', height: '100%' }
+    : ratio < 16 / 9
+      ? { height: '100%', aspectRatio: ratio }
+      : { width: '100%', aspectRatio: ratio };
+  // Photo en portrait : les détails occupent la bande noire de droite ; sinon ils passent sur l'image
+  const sideBar = ratio ? (1 - ratio / (16 / 9)) / 2 : 0;
+  const detailsStyle: React.CSSProperties | undefined = sideBar >= 0.22
+    ? { width: `calc(${(sideBar * 100).toFixed(2)}% - 8px)` }
+    : undefined;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -429,7 +456,7 @@ function PhotoViewer({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label={fileName(photo.src)}
+      aria-label={photo.name}
     >
       <motion.div
         className="photo-viewer-frame"
@@ -440,12 +467,22 @@ function PhotoViewer({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="photo-viewer-media">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img key={photo.key} src={encodeSrc(photo.src)} alt={`${photo.projectTitle} — ${photo.location}`} />
+          <div className="photo-viewer-image" style={imageBoxStyle}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              key={photo.key}
+              src={encodeSrc(photo.src)}
+              alt={`${photo.projectTitle} — ${photo.location}`}
+              onLoad={(event) => {
+                const img = event.currentTarget;
+                if (img.naturalHeight > 0) setRatio(img.naturalWidth / img.naturalHeight);
+              }}
+            />
+          </div>
         </div>
 
-        <div className="photo-viewer-details">
-          <h2>{fileName(photo.src)}</h2>
+        <div className="photo-viewer-details" style={detailsStyle}>
+          <h2>{photo.name}</h2>
           <p>Image {fileFormat(photo.src)}{fileSize ? ` · ${formatFileSize(fileSize)}` : ''}</p>
           <dl>
             <div><dt>Année</dt><dd>{photo.year}</dd></div>

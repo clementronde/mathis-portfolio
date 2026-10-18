@@ -6,7 +6,9 @@ import { encodeSrc } from '@/utils/path';
 
 // Intro : le texte d'accueil au centre, entouré de photos qui viennent vers nous en 3D,
 // puis tout s'efface avant que le fond de verrouillage apparaisse
-const INTRO_LINES = ['Bienvenue sur mon portfolio,', 'balade-toi dans mon univers', 'pour découvrir mon travail'];
+// Deux lignes de longueurs différentes : un titre court puis une phrase plus longue et plus légère,
+// pour éviter l'effet de bloc carré
+const INTRO_LINES = ['Bienvenue sur mon portfolio,', 'balade-toi dans mon univers pour découvrir mon travail'];
 const INTRO_DURATION_MS = 5300;
 const SHOW_INTRO = true;
 // Texte tapé lettre par lettre, comme au clavier
@@ -65,7 +67,12 @@ function TypedIntroText() {
           (index === INTRO_LINES.length - 1 && shown >= INTRO_CHAR_COUNT) ||
           (index === 0 && shown === 0);
         return (
-          <span key={line} className="block" aria-hidden="true">
+          <span
+            key={line}
+            className="block"
+            style={index === 0 ? undefined : { marginTop: '0.5em', fontSize: '0.5em', fontWeight: 500, color: '#3a3a3c', letterSpacing: '-0.005em' }}
+            aria-hidden="true"
+          >
             {line.slice(0, visible)}
             {hasCaret && <span className="intro-caret" />}
             {/* Reste invisible : la mise en page centrée ne bouge pas pendant la frappe */}
@@ -80,15 +87,20 @@ function TypedIntroText() {
 // Une photo de couverture par projet. Chaque photo garde une position fixe autour du centre
 // (angle d'or pour une répartition régulière sans motif visible) et avance en profondeur
 // vers la caméra : la perspective la fait grossir et s'écarter du centre en s'approchant
-const INTRO_PHOTO_COUNT = 28;
+const INTRO_PHOTO_COUNT = 22;
 const INTRO_FLIGHT_S = 7;
 const GOLDEN_ANGLE = 137.508;
-const INTRO_PHOTOS = PROJECTS.slice(0, INTRO_PHOTO_COUNT).map((project, index) => {
+// Couvertures d'abord, puis d'autres photos des projets pour remplir l'espace
+const INTRO_SOURCES = [
+  ...PROJECTS.map((project) => project.coverImage),
+  ...PROJECTS.flatMap((project) => project.images.filter((src) => src !== project.coverImage).slice(0, 1)),
+].slice(0, INTRO_PHOTO_COUNT);
+const INTRO_PHOTOS = INTRO_SOURCES.map((src, index) => {
   const angle = ((index * GOLDEN_ANGLE) % 360) * (Math.PI / 180);
   // Jamais pile au centre, pour que les photos proches ne masquent pas le texte
   const radius = 26 + (index % 7) * 5;
   return {
-    src: project.coverImage,
+    src,
     x: `${(Math.cos(angle) * radius).toFixed(2)}vw`,
     y: `${(Math.sin(angle) * radius * 0.62).toFixed(2)}vw`,
     width: 80 + (index % 4) * 16,
@@ -120,10 +132,10 @@ const INTRO_CSS = `
 }
 @keyframes intro-fly {
   0% { opacity: 0; transform: translate(-50%, -50%) translate3d(var(--intro-x), var(--intro-y), -3200px); }
-  /* Pâles au loin, nettes en approchant, comme dans la référence */
-  20% { opacity: .25; }
-  55% { opacity: .9; }
-  86% { opacity: 1; }
+  /* Invisibles tant qu'elles sont minuscules derrière le texte, puis apparaissent franchement */
+  38% { opacity: 0; }
+  52% { opacity: 1; }
+  88% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -50%) translate3d(var(--intro-x), var(--intro-y), 820px); }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -166,27 +178,27 @@ function IntroScene() {
         ))}
       </div>
 
-      {/* Voile couleur fond au centre : les photos lointaines, regroupées derrière le texte,
-          s'y estompent pour qu'il reste lisible */}
+      {/* Zone claire derrière le texte : les photos s'y estompent sans flou */}
       <div
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background:
-            'radial-gradient(ellipse 42% 34% at 50% 50%, #f1efea 0%, #f1efea 45%, rgba(241,239,234,0.75) 70%, rgba(241,239,234,0) 100%)',
+            'radial-gradient(ellipse 34% 24% at 50% 50%, rgba(241,239,234,0.92) 0%, rgba(241,239,234,0.7) 55%, rgba(241,239,234,0) 100%)',
         }}
         aria-hidden="true"
       />
 
       <h1
-        className="relative z-10 px-6 text-center font-medium"
+        className="relative z-10 mx-4 text-center font-semibold"
         style={{
           // Calque à part pour que le texte reste au-dessus des photos en 3D
           transform: 'translateZ(0)',
-          color: '#1d1d1f',
-          fontSize: 'clamp(20px, 2.6vw, 40px)',
-          lineHeight: 1.2,
+          color: '#111111',
+          fontSize: 'clamp(26px, 3.8vw, 60px)',
+          lineHeight: 1.1,
           letterSpacing: '-0.02em',
-          textShadow: '0 0 28px #f1efea, 0 0 12px #f1efea',
+          // Halo couleur fond net (pas de flou d'arrière-plan) pour détacher le texte des photos
+          textShadow: '0 0 2px #f1efea, 0 0 8px #f1efea, 0 0 18px #f1efea, 0 0 36px #f1efea',
         }}
       >
         <TypedIntroText />
@@ -299,12 +311,12 @@ export function LockScreen({ canUnlock, loadedImages, onUnlock, totalImages }: L
             <img
               src="/images/desktop/Ellipsemathis.png"
               alt=""
-              className="h-[34px] w-[34px] sm:h-[40px] sm:w-[40px] rounded-full"
+              className="h-[56px] w-[56px] sm:h-[72px] sm:w-[72px] rounded-full"
               style={{ boxShadow: '0 4px 14px rgba(0,0,0,0.3)' }}
               draggable={false}
             />
-            <span className="mt-2 text-[12px] sm:text-[13px] font-semibold">CREATIVE HUMAN</span>
-            <span className="mt-1.5 text-[10px] sm:text-[11px] text-white/70">
+            <span className="mt-3 text-[15px] sm:text-[18px] font-semibold">CREATIVE HUMAN</span>
+            <span className="mt-1.5 text-[12px] sm:text-[14px] text-white/70">
               {canUnlock ? 'Cliquer pour entrer' : `Chargement ${progress} %`}
             </span>
           </div>
