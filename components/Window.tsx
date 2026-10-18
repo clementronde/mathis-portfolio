@@ -32,7 +32,7 @@ const RESIZE_HANDLES = [
   { dir: 'sw', style: { bottom: 0, left: 0, width: 10, height: 10, cursor: 'nesw-resize' } },
 ] as const;
 
-const TOPBAR_H = 28;
+const TOPBAR_H = 0; // plus de barre supérieure sur le bureau
 const DOCK_BOTTOM_H = 80; // dock en bas: bottom-4 + py-2 + icône + marge
 // Largeur max des fenêtres sur mobile = largeur du dock (8 icônes × 36px + 7 gaps × 8px + 2 × 12px padding)
 const MOBILE_MAX_W = 368;

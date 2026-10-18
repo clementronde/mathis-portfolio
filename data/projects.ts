@@ -109,8 +109,8 @@ export const PROJECTS: Project[] = [
     location: 'Île de Ré, France',
     year: 2023,
     description: "L'île en été. Vélos, volets blancs et lumière atlantique.",
-    coverImage: '/images/projects/23-08 Ile de Ré /DSC_0215.avif',
-    images: p('23-08 Ile de Ré ', 'DSC_0215.avif'),
+    coverImage: '/images/projects/23-08 Ile de Ré/DSC_0215.avif',
+    images: p('23-08 Ile de Ré', 'DSC_0215.avif'),
     color: '#0a1e2e',
   },
   {
@@ -350,6 +350,17 @@ export const PROJECTS: Project[] = [
     color: '#2e1208',
   },
   {
+    id: 'motorola',
+    title: 'Motorola',
+    category: 'Marque',
+    location: 'Paris, France',
+    year: 2026,
+    description: 'Shoot d’un maillot collector Motorola x Orange pour une campagne lors de la Coupe du Monde 2026.',
+    coverImage: '/images/projects/26-05 MOTOROLA/HEA00099.avif',
+    images: p('26-05 MOTOROLA', 'HEA00099.avif', 'HEA00451_1.avif', 'HEA00510.avif', 'HEA00553.avif', 'HEA00569.avif', 'HEA00720.avif', 'HEA01051.avif', 'HEA01212.avif', 'HEA01318.avif', 'HEA01377.avif', 'HEA01557.avif'),
+    color: '#1a1a1a',
+  },
+  {
     id: 'road-trip-spain',
     title: 'Road Trip Spain',
     category: 'Voyage',
@@ -394,3 +405,22 @@ export const PROJECTS: Project[] = [
     color: '#1e2a0a',
   },
 ];
+
+// Les deux collections visibles dans l'app Photos :
+// Chroniques = moments réels (voyages, événementiel, mariages…), Focus = moments créatifs (shoots…)
+export type PhotoCollection = 'chroniques' | 'focus';
+
+export const PHOTO_COLLECTIONS: { id: PhotoCollection; label: string }[] = [
+  { id: 'chroniques', label: 'Chroniques' },
+  { id: 'focus', label: 'Focus' },
+];
+
+const FOCUS_CATEGORIES = ['Portrait', 'Marque'];
+const COLLECTION_OVERRIDES: Record<string, PhotoCollection> = {
+  'tbs-sete': 'focus',
+};
+
+export function getProjectCollection(project: Project): PhotoCollection {
+  return COLLECTION_OVERRIDES[project.id]
+    ?? (FOCUS_CATEGORIES.includes(project.category) ? 'focus' : 'chroniques');
+}

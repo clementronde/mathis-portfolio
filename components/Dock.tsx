@@ -41,7 +41,8 @@ export function Dock() {
         return (
           <motion.button
             key={app.id}
-            onClick={() => openWindow(app.id)}
+            // Le Finder s'ouvre toujours sur Documents depuis le dock
+            onClick={() => openWindow(app.id, app.id === 'finder' ? 'documents' : undefined)}
             aria-label={`Ouvrir ${app.label}`}
             title={app.label}
             className="relative flex items-center justify-center group outline-none"

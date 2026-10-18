@@ -8,7 +8,7 @@ interface TourStep {
   title: string;
   description: string;
   selector?: string;
-  placement: 'center' | 'right' | 'top' | 'bottom';
+  placement: 'center' | 'right' | 'top';
 }
 
 const TOUR_STEPS: TourStep[] = [
@@ -31,15 +31,9 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     title: 'Toutes les applications',
-    description: 'Le dock rassemble Finder, Photos, Notes, Musique, Maps et mes outils créatifs. Une pastille indique les applications ouvertes.',
+    description: 'Le dock rassemble Finder, Mail, Photos et Maps. Une pastille indique les applications ouvertes.',
     selector: '[data-tour="dock"]',
     placement: 'top',
-  },
-  {
-    title: 'Vous êtes prêt',
-    description: 'La barre supérieure vous accompagne comme sur macOS. Ouvrez, déplacez et redimensionnez les fenêtres librement pour construire votre visite.',
-    selector: '[data-tour="topbar"]',
-    placement: 'bottom',
   },
 ];
 
@@ -164,7 +158,6 @@ export function DesktopTour({ onFinish }: { onFinish: () => void }) {
     };
     const preferredOrder: Record<TourStep['placement'], Array<keyof typeof candidates>> = {
       top: ['top', 'right', 'left', 'bottom'],
-      bottom: ['bottom', 'right', 'left', 'top'],
       right: ['right', 'bottom', 'top', 'left'],
       center: ['right', 'left', 'top', 'bottom'],
     };

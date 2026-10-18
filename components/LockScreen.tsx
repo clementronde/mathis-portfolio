@@ -32,7 +32,7 @@ export function LockScreen({ canUnlock, loadedImages, onUnlock, totalImages }: L
       key="lockscreen"
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center select-none overflow-hidden"
       style={{
-        backgroundImage: `url('/images/desktop/wallpaperverouillage.png')`,
+        backgroundImage: `url('/images/desktop/wallpaperverouillage.avif')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundColor: '#141414',
@@ -63,7 +63,7 @@ export function LockScreen({ canUnlock, loadedImages, onUnlock, totalImages }: L
         <div
           className="font-light leading-none"
           style={{
-            fontSize: 'clamp(72px, 20vw, 160px)',
+            fontSize: 'clamp(52px, 13vw, 104px)',
             fontVariantNumeric: 'tabular-nums',
             fontStretch: 'expanded',
             letterSpacing: 0,
@@ -76,7 +76,7 @@ export function LockScreen({ canUnlock, loadedImages, onUnlock, totalImages }: L
         <div
           className="mt-3 font-light capitalize tracking-wide opacity-85"
           style={{
-            fontSize: 'clamp(15px, 3vw, 24px)',
+            fontSize: 'clamp(13px, 2vw, 18px)',
             textShadow: '0 1px 16px rgba(0,0,0,0.3)',
           }}
         >
@@ -105,7 +105,7 @@ export function LockScreen({ canUnlock, loadedImages, onUnlock, totalImages }: L
           className="mt-5 text-[19px] sm:text-[24px] font-semibold"
           style={{ textShadow: '0 2px 18px rgba(0,0,0,0.45)' }}
         >
-          HUMAN CREATIVE
+          CREATIVE HUMAN
         </span>
         <span className="mt-2 text-[12px] sm:text-[13px] tracking-[0.16em] font-medium text-white/70">
           {canUnlock ? 'Cliquer pour entrer' : `Chargement ${progress}%`}

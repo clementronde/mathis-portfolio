@@ -9,7 +9,7 @@ export function HomeNotifications() {
   return (
     <motion.div
       data-tour="widgets"
-      className="absolute left-3 sm:left-5 top-11 sm:top-14 z-0 flex w-[210px] sm:w-[260px] flex-col gap-2.5 select-none"
+      className="absolute left-3 sm:left-5 top-3 sm:top-5 z-0 flex w-[210px] sm:w-[260px] flex-col gap-2.5 select-none"
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -56,7 +56,7 @@ export function HomeNotifications() {
         />
         <div className="min-w-0 flex-1">
           <div className="text-[13px] font-medium text-black/90">Mail</div>
-          <div className="truncate text-[12px] text-black/60">
+          <div className="text-[12px] leading-snug text-black/60">
             Envie de me contacter pour un projet ?
           </div>
         </div>

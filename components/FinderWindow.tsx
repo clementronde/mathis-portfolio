@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Clock, FileText, Monitor } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, ExternalLink, FileText, Monitor } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Window } from './Window';
 import { Lightbox } from './Lightbox';
@@ -66,7 +66,9 @@ function DesktopItemThumb({ item, size = 72 }: { item: DesktopItemConfig; size?:
 }
 
 function getDesktopItemFolder(item: DesktopItemConfig): string | undefined {
-  return item.action.type === 'finder' ? (item.action as { folder?: string }).folder : undefined;
+  if (item.action.type === 'finder') return item.action.folder;
+  if (item.action.type === 'photos') return item.action.album;
+  return undefined;
 }
 
 const FINDER_PROJECT_IDS = ['otacos-lolla', 'tbs-sete'];
@@ -86,13 +88,15 @@ const SIDEBAR_ITEMS = [
 
 const CV_FILE_PATH = '/documents/CV-Mathis-Straebler.pdf';
 
-type DocumentsSelection = 'cv' | 'diplomes' | 'projets-recents';
+type DocumentsSelection = 'cv' | 'projets-recents';
 
 const DOCUMENTS_ROOT_ITEMS = [
   { id: 'cv', label: 'CV' },
-  { id: 'diplomes', label: 'Diplômes' },
-  { id: 'projets-recents', label: 'Projets récents' },
+  { id: 'projets-recents', label: 'Derniers projets' },
 ] as const;
+
+// Dossier spécial ouvert depuis l'icône "Derniers projets" du bureau
+const RECENT_PROJECTS_FOLDER = 'projets-recents';
 
 const CV_FILE_LABEL = 'CV de Mathis Straebler';
 
@@ -129,66 +133,87 @@ function CvPreview({ compact, onOpen }: { compact: boolean; onOpen: () => void }
   );
 }
 
-interface RecentProjectFile {
-  name: string;
-  path: string;
-  type: 'pdf' | 'gif';
+interface ProjectLink {
+  label: string;
+  url: string;
 }
 
 interface RecentDocumentProject {
   id: string;
   title: string;
-  files: RecentProjectFile[];
+  idea: string;
+  year: number;
+  // Version en ligne (Adobe InDesign) quand elle existe, sinon le PDF local
+  pdfUrl: string;
+  links: ProjectLink[];
 }
+
+const ig = (path: string) => `https://www.instagram.com/${path}/`;
 
 const RECENT_DOCUMENT_PROJECTS: RecentDocumentProject[] = [
   {
-    id: 'les-rats',
-    title: 'Les Rats',
-    files: [
-      { name: 'PDF explicatif Les Rats', path: '/documents/LES RATS/PDF EXPLICATIF LES RATS.pdf', type: 'pdf' },
-      { name: 'GIF', path: '/documents/LES RATS/GIF.gif', type: 'gif' },
-    ],
-  },
-  {
     id: 'magnolia',
-    title: 'Magnolia',
-    files: [
-      { name: 'PDF explicatif Bar Magnolia', path: '/documents/MAGNOLIA/PDF EXPLICATIF BAR MAGNOLIA.pdf', type: 'pdf' },
-      { name: 'V6', path: '/documents/MAGNOLIA/V6.gif', type: 'gif' },
-    ],
+    title: 'Le Magnolia',
+    idea: 'Shoot pour promouvoir le couscous du Bar / Restaurant Le Magnolia.',
+    year: 2024,
+    pdfUrl: 'https://indd.adobe.com/view/194dda6a-a4ce-4c0e-9c07-368668b6f0c9',
+    links: [{ label: 'Réseaux sociaux', url: ig('reel/DEaYlBRtlJO') }],
   },
   {
-    id: 'marseille-doc',
-    title: 'Marseille',
-    files: [
-      { name: 'PDF explicatif Marseille', path: '/documents/MARSEILLE/PDF EXPLICATIF MARSEILLE.pdf', type: 'pdf' },
+    id: 'les-rats',
+    title: 'Tee-shirt Les Rats',
+    idea: 'Shoot du tee-shirt familial dans la maison familiale avec des situations, des lieux & objets faisant référence à son histoire.',
+    year: 2025,
+    pdfUrl: 'https://indd.adobe.com/view/4e21fa44-1273-49e1-b883-079aa96d2198',
+    links: [{ label: 'Réseaux sociaux', url: ig('reel/DUghlxUDauy') }],
+  },
+  {
+    id: 'tbs-doc',
+    title: 'TBS',
+    idea: 'Shoot de la campagne été pour la marque TBS. Backstage + vidéo.',
+    year: 2025,
+    pdfUrl: 'https://indd.adobe.com/view/589bc269-1127-4a4e-b37e-5552d43b04c7',
+    links: [
+      { label: 'Réseaux sociaux', url: ig('reel/DWD1XyfjoQi') },
+      { label: 'Réseaux sociaux', url: ig('reel/DWO7ZA0Cabd') },
     ],
   },
   {
     id: 'motorola',
     title: 'Motorola',
-    files: [
-      { name: 'PDF explicatif Motorola', path: '/documents/MOTOROLA/PDF EXPLICATIF MOTOROLA.pdf', type: 'pdf' },
+    idea: 'Shoot d’un maillot collector Motorola x Orange pour une campagne lors de la Coupe du Monde 2026. Photos + backstage vidéo.',
+    year: 2026,
+    pdfUrl: '/documents/MOTOROLA/PDF EXPLICATIF MOTOROLA.pdf',
+    links: [
+      { label: 'Réseaux sociaux', url: ig('p/DYhvbL-DeQT') },
+      { label: 'Réseaux sociaux', url: ig('p/DaLOxcgDVn9') },
+      { label: 'Réseaux sociaux', url: ig('p/DZp47ILDTg7') },
+      { label: 'BTS', url: ig('reel/DaDqaXgNkPn') },
+      { label: 'Teaser', url: ig('reel/DX68eZFtK6S') },
+      { label: 'Campagne', url: ig('reel/DYPpiFVNAzW') },
     ],
   },
   {
     id: 'noclout-doc',
-    title: 'NOCLOUT',
-    files: [
-      { name: 'PDF explicatif NOCLOUT', path: '/documents/NOCLOUT/PDF EXPLICATIF NOCLOUT.pdf', type: 'pdf' },
-    ],
+    title: 'BTS NOCLOUT',
+    idea: 'Photographe plateau lors d’un tournage pour NOCLOUT.',
+    year: 2024,
+    pdfUrl: '/documents/NOCLOUT/PDF EXPLICATIF NOCLOUT.pdf',
+    links: [{ label: 'Réseaux sociaux', url: ig('reel/DC9EcZVurO-') }],
   },
   {
-    id: 'tbs-doc',
-    title: 'TBS',
-    files: [
-      { name: 'PDF explicatif TBS Sète', path: '/documents/TBS/PDF EXPLICATIF TBS_SÈTE.pdf', type: 'pdf' },
-      { name: 'Transitions mer 01', path: '/documents/TBS/CONTENU 1 - TRANSITIONS MER GIF_1.gif', type: 'gif' },
-      { name: 'Transitions mer 03', path: '/documents/TBS/CONTENU 1 - TRANSITIONS MER GIF_3.gif', type: 'gif' },
-    ],
+    id: 'marseille-doc',
+    title: 'Marseille',
+    idea: 'Shoot improvisé à Marseille.',
+    year: 2026,
+    pdfUrl: 'https://indd.adobe.com/view/6aa7866f-5c03-4926-97d8-51c56b91c156',
+    links: [{ label: 'Réseaux sociaux', url: ig('reel/DWMbps3jMlq') }],
   },
 ];
+
+function openExternal(url: string) {
+  window.open(url.startsWith('/') ? encodeSrc(url) : url, '_blank', 'noopener,noreferrer');
+}
 
 const SECTION_PROJECTS: Record<FinderSection, Project[]> = {
   recents: FINDER_PROJECTS,
@@ -288,70 +313,77 @@ function ProjectFolderGrid({
   );
 }
 
-function RecentDocumentsBrowser({
-  selectedProject,
+function RecentProjectsColumn({
+  selectedProjectId,
   isMobile,
   onSelectProject,
-  onOpenFile,
 }: {
-  selectedProject: RecentDocumentProject | null;
+  selectedProjectId: string | null;
   isMobile: boolean;
-  onSelectProject: (project: RecentDocumentProject | null) => void;
-  onOpenFile: (file: RecentProjectFile) => void;
+  onSelectProject: (project: RecentDocumentProject) => void;
 }) {
-  if (!selectedProject) {
-    return (
-      <div className="flex flex-wrap justify-center gap-5">
-        {RECENT_DOCUMENT_PROJECTS.map((project) => (
-          <motion.button
-            key={project.id}
-            onClick={() => onSelectProject(project)}
-            whileHover={{ y: -2 }}
-            className="flex w-[82px] flex-col items-center gap-1.5 outline-none"
-          >
-            <FolderIcon size={isMobile ? 48 : 76} />
-            <span className={`${isMobile ? 'text-[9px]' : 'text-[10px]'} max-w-full truncate text-center font-medium text-black/60`}>{project.title}</span>
-            <span className="text-[8px] text-black/30">{project.files.length} fichier{project.files.length > 1 ? 's' : ''}</span>
-          </motion.button>
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full">
-      <button
+    <>
+      {RECENT_DOCUMENT_PROJECTS.map((project) => (
+        <button
+          key={project.id}
+          onClick={() => onSelectProject(project)}
+          className={`w-full ${isMobile ? 'h-[38px] gap-2' : 'h-[54px] gap-3'} px-2 flex items-center rounded-md text-left transition-colors`}
+          style={{ background: selectedProjectId === project.id ? 'rgba(0,0,0,0.06)' : 'transparent' }}
+        >
+          <FolderIcon size={isMobile ? 22 : 28} />
+          <span className={`${isMobile ? 'text-[11px]' : 'text-[13px]'} font-semibold truncate`}>{project.title}</span>
+          <ChevronRight size={isMobile ? 13 : 18} className="ml-auto shrink-0" style={{ color: 'rgba(0,0,0,0.55)' }} />
+        </button>
+      ))}
+    </>
+  );
+}
+
+function RecentProjectDetails({ project, isMobile }: { project: RecentDocumentProject; isMobile: boolean }) {
+  return (
+    <div className={`flex flex-col ${isMobile ? 'gap-3 px-2' : 'gap-5'}`}>
+      <motion.button
         type="button"
-        onClick={() => onSelectProject(null)}
-        className="mb-5 flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-black/55 transition-colors hover:bg-black/5"
+        onClick={() => openExternal(project.pdfUrl)}
+        whileHover={{ y: -2 }}
+        className="flex items-center gap-3 self-start outline-none"
+        aria-label={`Ouvrir le PDF ${project.title}`}
       >
-        <ChevronLeft size={14} /> Projets récents
-      </button>
-      <div className="flex flex-wrap justify-center gap-5">
-        {selectedProject.files.map((file) => (
-          <motion.button
-            key={file.path}
-            type="button"
-            onClick={() => onOpenFile(file)}
-            whileHover={{ y: -2 }}
-            className="flex w-[96px] flex-col items-center gap-2 outline-none"
-            aria-label={`Ouvrir ${file.name}`}
-          >
-            {file.type === 'gif' ? (
-              <div className={`${isMobile ? 'h-[74px] w-[48px]' : 'h-[118px] w-[74px]'} overflow-hidden rounded-[5px] bg-black/5 shadow-sm`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={encodeSrc(file.path)} alt="" className="h-full w-full object-cover" loading="lazy" />
-              </div>
-            ) : (
-              <div className={`${isMobile ? 'h-[74px] w-[56px]' : 'h-[118px] w-[88px]'} relative flex items-center justify-center rounded-[5px] border border-black/10 bg-white shadow-sm`}>
-                <FileText size={isMobile ? 28 : 42} strokeWidth={1.35} className="text-[#df3b30]" />
-                <span className="absolute bottom-2 rounded-sm bg-[#df3b30] px-1.5 py-0.5 text-[7px] font-bold tracking-wide text-white">PDF</span>
-              </div>
-            )}
-            <span className={`${isMobile ? 'text-[8px]' : 'text-[9px]'} w-full text-center leading-tight text-black/55`}>{file.name}</span>
-          </motion.button>
-        ))}
-      </div>
+        <div className={`${isMobile ? 'h-[56px] w-[42px]' : 'h-[96px] w-[72px]'} relative flex shrink-0 items-center justify-center rounded-[5px] border border-black/10 bg-white shadow-sm`}>
+          <FileText size={isMobile ? 22 : 34} strokeWidth={1.35} className="text-[#df3b30]" />
+          <span className="absolute bottom-1.5 rounded-sm bg-[#df3b30] px-1.5 py-0.5 text-[7px] font-bold tracking-wide text-white">PDF</span>
+        </div>
+        <span className={`${isMobile ? 'text-[11px]' : 'text-[13px]'} flex items-center gap-1 font-semibold text-black/70`}>
+          Voir le PDF <ExternalLink size={isMobile ? 11 : 13} />
+        </span>
+      </motion.button>
+
+      <dl className={`${isMobile ? 'text-[11px]' : 'text-[13px]'} flex flex-col gap-3`}>
+        <div>
+          <dt className="text-[10px] font-semibold uppercase tracking-wide text-black/40">L’idée</dt>
+          <dd className="mt-0.5 leading-snug text-black/75">{project.idea}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] font-semibold uppercase tracking-wide text-black/40">La date</dt>
+          <dd className="mt-0.5 text-black/75">{project.year}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] font-semibold uppercase tracking-wide text-black/40">La destination</dt>
+          <dd className="mt-1 flex flex-wrap gap-1.5">
+            {project.links.map((link) => (
+              <button
+                key={link.url}
+                type="button"
+                onClick={() => openExternal(link.url)}
+                className="flex items-center gap-1 rounded-full bg-black/[0.05] px-2.5 py-1 text-[11px] font-medium text-black/70 transition-colors hover:bg-black/10"
+              >
+                {link.label} <ExternalLink size={10} />
+              </button>
+            ))}
+          </dd>
+        </div>
+      </dl>
     </div>
   );
 }
@@ -463,7 +495,7 @@ function RecentItemsList({
 
 /* ─── Main component ─────────────────────────────────────────────── */
 export function FinderWindow() {
-  const { finderFolder, finderNavigationVersion, recentItems, openNote, recordRecentProject } = useWindowStore();
+  const { finderFolder, finderNavigationVersion, recentItems, openNote, openPhotosAlbum, recordRecentProject } = useWindowStore();
   const [selectedProject, setSelectedProject] = useState<Project | null>(
     () => findFinderProject(finderFolder)
   );
@@ -471,11 +503,14 @@ export function FinderWindow() {
     const proj = findFinderProject(finderFolder);
     if (proj) return getProjectSection(proj) ?? 'documents';
     if (finderFolder && isFinderSection(finderFolder)) return finderFolder;
+    if (finderFolder === RECENT_PROJECTS_FOLDER) return 'documents';
     return 'documents';
   });
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [desktopItemLightboxSrc, setDesktopItemLightboxSrc] = useState<string | null>(null);
-  const [documentsSelected, setDocumentsSelected] = useState<DocumentsSelection>('cv');
+  const [documentsSelected, setDocumentsSelected] = useState<DocumentsSelection>(
+    () => finderFolder === RECENT_PROJECTS_FOLDER ? 'projets-recents' : 'cv'
+  );
   const [recentDocumentProjectId, setRecentDocumentProjectId] = useState<string | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -504,6 +539,12 @@ export function FinderWindow() {
       setActiveSection(finderFolder);
       setActiveImageIndex(0);
       setDocumentsSelected('cv');
+    } else if (finderFolder === RECENT_PROJECTS_FOLDER) {
+      setSelectedProject(null);
+      setActiveSection('documents');
+      setActiveImageIndex(0);
+      setDocumentsSelected('projets-recents');
+      setRecentDocumentProjectId(null);
     }
   }, [finderFolder, finderNavigationVersion]);
 
@@ -525,22 +566,26 @@ export function FinderWindow() {
     window.open(CV_FILE_PATH, '_blank', 'noopener,noreferrer');
   }
 
-  function openRecentProjectFile(file: RecentProjectFile) {
-    if (file.type === 'pdf') {
-      window.open(encodeSrc(file.path), '_blank', 'noopener,noreferrer');
-      return;
-    }
-    setDesktopItemLightboxSrc(file.path);
-  }
-
   function openDesktopItem(item: DesktopItemConfig) {
     if (item.action.type === 'lightbox') {
       setDesktopItemLightboxSrc(item.imageSrc);
       return;
     }
 
+    if (item.action.type === 'photos') {
+      openPhotosAlbum(item.action.album ?? null);
+      return;
+    }
+
     const folder = getDesktopItemFolder(item);
     if (!folder) return;
+
+    if (folder === RECENT_PROJECTS_FOLDER) {
+      openSection('documents');
+      setDocumentsSelected('projets-recents');
+      setRecentDocumentProjectId(null);
+      return;
+    }
 
     const proj = findFinderProject(folder);
     if (proj) {
@@ -771,7 +816,7 @@ export function FinderWindow() {
                   transition={{ duration: 0.15 }}
                   className="h-full flex"
                 >
-                  <div className={`${isMobile ? 'w-full px-3 pt-2' : 'w-[285px] px-7 pt-6'} shrink-0`}>
+                  <div className={`${isMobile ? 'w-full px-3 pt-2' : isRecentDocumentsView ? 'w-[190px] px-3 pt-6' : 'w-[285px] px-7 pt-6'} shrink-0`}>
                     {activeSection === 'recents' ? (
                       <RecentItemsList
                         items={visibleRecentItems}
@@ -814,16 +859,22 @@ export function FinderWindow() {
                           <div className="mt-3 border-t border-black/10 pt-3">
                             {documentsSelected === 'cv' ? (
                               <CvPreview compact onOpen={openCvFile} />
-                            ) : documentsSelected === 'diplomes' ? (
-                              <div className="px-2 text-[11px]" style={{ color: 'rgba(0,0,0,0.42)' }}>
-                                Ce dossier est vide.
-                              </div>
+                            ) : recentDocumentProject ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => setRecentDocumentProjectId(null)}
+                                  className="mb-3 flex items-center gap-1 rounded-md px-1 py-1 text-[11px] font-medium text-black/55"
+                                >
+                                  <ChevronLeft size={14} /> Derniers projets
+                                </button>
+                                <RecentProjectDetails project={recentDocumentProject} isMobile />
+                              </>
                             ) : (
-                              <RecentDocumentsBrowser
-                                selectedProject={recentDocumentProject}
+                              <RecentProjectsColumn
+                                selectedProjectId={null}
                                 isMobile
-                                onSelectProject={(project) => setRecentDocumentProjectId(project?.id ?? null)}
-                                onOpenFile={openRecentProjectFile}
+                                onSelectProject={(project) => setRecentDocumentProjectId(project.id)}
                               />
                             )}
                           </div>
@@ -852,10 +903,10 @@ export function FinderWindow() {
                     <>
                       <div className="w-px h-full" style={{ background: 'rgba(0,0,0,0.08)' }} />
                       <div
-                        className={`flex-1 px-10 pb-12 ${
+                        className={`flex-1 min-w-0 ${
                           isRecentDocumentsView
-                            ? 'flex items-start justify-start pt-5 overflow-y-auto'
-                            : 'flex items-center justify-center'
+                            ? 'flex items-stretch'
+                            : 'px-10 pb-12 flex items-center justify-center'
                         }`}
                       >
                         {activeSection === 'recents' && visibleRecentItems[0]?.type === 'note' ? (
@@ -895,17 +946,26 @@ export function FinderWindow() {
                           </div>
                         ) : activeSection === 'documents' && documentsSelected === 'cv' ? (
                           <CvPreview compact={false} onOpen={openCvFile} />
-                        ) : activeSection === 'documents' && documentsSelected === 'diplomes' ? (
-                          <div className="text-[14px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
-                            Ce dossier est vide
-                          </div>
-                        ) : activeSection === 'documents' && documentsSelected === 'projets-recents' ? (
-                          <RecentDocumentsBrowser
-                            selectedProject={recentDocumentProject}
-                            isMobile={false}
-                            onSelectProject={(project) => setRecentDocumentProjectId(project?.id ?? null)}
-                            onOpenFile={openRecentProjectFile}
-                          />
+                        ) : isRecentDocumentsView ? (
+                          <>
+                            <div className="w-[200px] shrink-0 overflow-y-auto px-3 pt-6">
+                              <RecentProjectsColumn
+                                selectedProjectId={recentDocumentProjectId}
+                                isMobile={false}
+                                onSelectProject={(project) => setRecentDocumentProjectId(project.id)}
+                              />
+                            </div>
+                            <div className="w-px h-full shrink-0" style={{ background: 'rgba(0,0,0,0.08)' }} />
+                            <div className="flex-1 min-w-0 overflow-y-auto px-5 pt-7 pb-10">
+                              {recentDocumentProject ? (
+                                <RecentProjectDetails project={recentDocumentProject} isMobile={false} />
+                              ) : (
+                                <div className="pt-10 text-center text-[13px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
+                                  Sélectionnez un projet
+                                </div>
+                              )}
+                            </div>
+                          </>
                         ) : visibleProjects[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img

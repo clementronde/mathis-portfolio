@@ -38,9 +38,12 @@ interface WindowStore {
   activeWindow: AppId | null;
   finderFolder: string | null;
   finderNavigationVersion: number;
+  photosAlbum: string | null;
+  photosNavigationVersion: number;
   selectedNoteId: string | null;
   recentItems: RecentItem[];
   openWindow: (id: AppId, folder?: string | null) => void;
+  openPhotosAlbum: (projectId: string | null) => void;
   openNote: (noteId: string) => void;
   setSelectedNote: (noteId: string) => void;
   recordRecentProject: (projectId: string) => void;
@@ -54,6 +57,8 @@ export const useWindowStore = create<WindowStore>((set) => ({
   activeWindow: null,
   finderFolder: null,
   finderNavigationVersion: 0,
+  photosAlbum: null,
+  photosNavigationVersion: 0,
   selectedNoteId: null,
   recentItems: [],
   openWindow: (id, folder) =>
@@ -69,6 +74,15 @@ export const useWindowStore = create<WindowStore>((set) => ({
       recentItems: id === 'finder' && folder && !FINDER_SECTION_IDS.includes(folder as FinderSectionId)
         ? addRecentItem(state.recentItems, { type: 'project', itemId: folder })
         : state.recentItems,
+    })),
+  openPhotosAlbum: (projectId) =>
+    set((state) => ({
+      openWindows: state.openWindows.includes('photos')
+        ? state.openWindows
+        : [...state.openWindows, 'photos'],
+      activeWindow: 'photos',
+      photosAlbum: projectId,
+      photosNavigationVersion: state.photosNavigationVersion + 1,
     })),
   openNote: (noteId) =>
     set((state) => ({

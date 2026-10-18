@@ -9,7 +9,7 @@ const ICON_FILES: Partial<Record<AppId, string>> = {
   notes:  '/images/icons/noteicon.png',
   photos: '/images/icons/Photosicon.png',
   music:  '/images/icons/musiqueIcon.png',
-  maps:   '/images/icons/localistionicon.png',
+  maps:   '/images/icons/plansicon.png',
   photoshop: '/images/icons/photoshopicon.png',
   premiere: '/images/icons/premiereproicon.png',
 };

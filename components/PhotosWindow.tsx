@@ -4,13 +4,19 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Window } from './Window';
 import { AppIcon } from './icons/AppIcons';
-import { PROJECTS } from '@/data/projects';
+import { PROJECTS, PHOTO_COLLECTIONS, getProjectCollection, type PhotoCollection } from '@/data/projects';
 import { encodeSrc } from '@/utils/path';
 import { useWindowStore } from '@/store/useWindowStore';
-import { ChevronLeft, ChevronRight, Folder, ImageIcon, Minus, Plus, X } from 'lucide-react';
+import { Aperture, BookOpen, ChevronLeft, ChevronRight, ImageIcon, Minus, Plus, X } from 'lucide-react';
+
+// Le dossier de chaque projet commence par sa date (AA-MM…) : on trie du plus récent au plus ancien
+const projectFolder = (src: string) => src.split('/')[3] ?? '';
+const PROJECTS_NEWEST_FIRST = [...PROJECTS].sort((a, b) =>
+  projectFolder(b.coverImage).localeCompare(projectFolder(a.coverImage))
+);
 
 // Flatten all project images into a single list, tagged by project id
-const ALL_PHOTOS = PROJECTS.flatMap((proj) =>
+const ALL_PHOTOS = PROJECTS_NEWEST_FIRST.flatMap((proj) =>
   proj.images
     .filter((img) => /\.(avif|jpg|jpeg|JPG|webp|png)$/i.test(img))
     .map((img, i) => ({
@@ -19,6 +25,7 @@ const ALL_PHOTOS = PROJECTS.flatMap((proj) =>
       projectId: proj.id,
       projectTitle: proj.title,
       category: proj.category,
+      collection: getProjectCollection(proj),
       location: proj.location,
       year: proj.year,
       description: proj.description,
@@ -28,16 +35,18 @@ const ALL_PHOTOS = PROJECTS.flatMap((proj) =>
 
 const ZOOM_MIN = 0;
 const ZOOM_MAX = 5;
-const DEFAULT_ZOOM = 3;
-const TILE_WIDTH_BY_ZOOM = [70, 82, 96, 116, 142, 176];
+const DEFAULT_ZOOM = 2;
+const TILE_WIDTH_BY_ZOOM = [110, 140, 175, 215, 265, 330];
 const WHEEL_ZOOM_STEP = 420;
 const PINCH_ZOOM_IN_SCALE = 1.8;
 const PINCH_ZOOM_OUT_SCALE = 0.55;
 const ZOOM_COOLDOWN_MS = 260;
 
 export function PhotosWindow() {
-  const openWindow = useWindowStore((state) => state.openWindow);
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const photosAlbum = useWindowStore((state) => state.photosAlbum);
+  const photosNavigationVersion = useWindowStore((state) => state.photosNavigationVersion);
+  const [selectedProject, setSelectedProject] = useState<string | null>(photosAlbum);
+  const [selectedCollection, setSelectedCollection] = useState<PhotoCollection | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
   const [isMobile, setIsMobile] = useState(false);
@@ -51,6 +60,13 @@ export function PhotosWindow() {
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
   }, []);
+  // Ouverture depuis une image du bureau : on arrive directement sur l'album
+  useEffect(() => {
+    setSelectedProject(photosAlbum);
+    setSelectedCollection(null);
+    setLightboxIndex(null);
+  }, [photosAlbum, photosNavigationVersion]);
+
   const wheelZoomDeltaRef = useRef(0);
   const currentZoomRef = useRef(DEFAULT_ZOOM);
   const gestureStartZoomRef = useRef(DEFAULT_ZOOM);
@@ -58,9 +74,16 @@ export function PhotosWindow() {
 
   const filtered = selectedProject
     ? ALL_PHOTOS.filter((p) => p.projectId === selectedProject)
-    : ALL_PHOTOS;
+    : selectedCollection
+      ? ALL_PHOTOS.filter((p) => p.collection === selectedCollection)
+      : ALL_PHOTOS;
 
   const currentProject = PROJECTS.find((p) => p.id === selectedProject);
+  const currentCollection = PHOTO_COLLECTIONS.find((c) => c.id === selectedCollection);
+  const showLibrary = (collection: PhotoCollection | null) => {
+    setSelectedProject(null);
+    setSelectedCollection(collection);
+  };
   const tileWidth = TILE_WIDTH_BY_ZOOM[zoomLevel];
   currentZoomRef.current = zoomLevel;
   const setClampedZoom = (nextZoom: number | ((current: number) => number)) => {
@@ -169,10 +192,10 @@ export function PhotosWindow() {
           }}
         >
           <button
-            onClick={() => setSelectedProject(null)}
+            onClick={() => showLibrary(null)}
             className={`flex items-center ${isMobile ? 'gap-1.5 py-1.5 mx-[6px] text-[10px]' : 'gap-3 py-2 mx-[22px] text-[17px]'} px-0 rounded-lg font-medium transition-colors`}
             style={{
-              background: !selectedProject ? 'rgba(0,0,0,0.045)' : 'transparent',
+              background: !selectedProject && !selectedCollection ? 'rgba(0,0,0,0.045)' : 'transparent',
               color: '#1d1d1f',
             }}
           >
@@ -182,25 +205,29 @@ export function PhotosWindow() {
           {!isMobile && (
             <>
               <div className="mx-[22px] mt-1 mb-1 text-[12px]" style={{ color: 'rgba(60,60,67,0.45)' }}>{ALL_PHOTOS.length} photos</div>
-              <div className="mt-6 mb-4 px-[28px] text-[13px] font-semibold" style={{ color: 'rgba(60,60,67,0.68)' }}>Albums</div>
+              <div className="mt-6 mb-4 px-[28px] text-[13px] font-semibold" style={{ color: 'rgba(60,60,67,0.68)' }}>Collections</div>
             </>
           )}
-          {isMobile && <div className="mx-[6px] mt-3 mb-2 text-[9px] font-semibold uppercase tracking-wide" style={{ color: 'rgba(60,60,67,0.5)' }}>Albums</div>}
-          {PROJECTS.map((proj) => (
-            <button
-              key={proj.id}
-              onClick={() => setSelectedProject(proj.id)}
-              className={`flex items-center ${isMobile ? 'gap-1.5 py-1 mx-[6px] text-[10px]' : 'gap-3 py-2 mx-[22px] text-[15px]'} px-0 rounded-lg font-medium transition-colors text-left`}
-              style={{
-                background: selectedProject === proj.id ? 'rgba(0,0,0,0.045)' : 'transparent',
-                color: '#1d1d1f',
-              }}
-            >
-              <Folder size={isMobile ? 13 : 21} className="shrink-0" strokeWidth={2} />
-              <span className="truncate">{proj.title}</span>
-              {!isMobile && <span className="ml-auto text-[12px] shrink-0" style={{ color: 'rgba(60,60,67,0.42)' }}>{proj.images.length}</span>}
-            </button>
-          ))}
+          {isMobile && <div className="mx-[6px] mt-3 mb-2 text-[9px] font-semibold uppercase tracking-wide" style={{ color: 'rgba(60,60,67,0.5)' }}>Collections</div>}
+          {PHOTO_COLLECTIONS.map((collection) => {
+            const Icon = collection.id === 'chroniques' ? BookOpen : Aperture;
+            const count = ALL_PHOTOS.filter((p) => p.collection === collection.id).length;
+            return (
+              <button
+                key={collection.id}
+                onClick={() => showLibrary(collection.id)}
+                className={`flex items-center ${isMobile ? 'gap-1.5 py-1 mx-[6px] text-[10px]' : 'gap-3 py-2 mx-[22px] text-[15px]'} px-0 rounded-lg font-semibold uppercase tracking-wide transition-colors text-left`}
+                style={{
+                  background: !selectedProject && selectedCollection === collection.id ? 'rgba(0,0,0,0.045)' : 'transparent',
+                  color: '#1d1d1f',
+                }}
+              >
+                <Icon size={isMobile ? 13 : 21} className="shrink-0" strokeWidth={2} />
+                <span className="truncate">{collection.label}</span>
+                {!isMobile && <span className="ml-auto text-[12px] font-normal shrink-0" style={{ color: 'rgba(60,60,67,0.42)' }}>{count}</span>}
+              </button>
+            );
+          })}
         </div>
 
         {/* Main gallery */}
@@ -210,8 +237,19 @@ export function PhotosWindow() {
             className={`${isMobile ? 'flex items-end px-3 pb-2' : 'h-[86px] px-7 flex items-center'} shrink-0 gap-2 min-w-0`}
             style={{ background: '#ffffff', paddingTop: isMobile ? 44 : undefined }}
           >
+            {currentProject && (
+              <button
+                type="button"
+                onClick={() => showLibrary(selectedCollection)}
+                aria-label="Retour à la bibliothèque"
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-md transition-colors hover:bg-black/5"
+                style={{ color: 'rgba(0,0,0,0.55)' }}
+              >
+                <ChevronLeft size={isMobile ? 16 : 20} strokeWidth={2.4} />
+              </button>
+            )}
             <span className={`${isMobile ? 'text-[13px]' : 'text-[23px]'} font-bold truncate min-w-0`} style={{ color: 'rgba(0,0,0,0.7)' }}>
-              {currentProject ? currentProject.title : 'Bibliothèque'}
+              {currentProject ? currentProject.title : currentCollection ? currentCollection.label : 'Bibliothèque'}
             </span>
             <span className={`${isMobile ? 'text-[11px]' : 'text-[14px]'} ml-1 shrink-0`} style={{ color: 'rgba(0,0,0,0.35)' }}>
               · {filtered.length}
@@ -254,45 +292,34 @@ export function PhotosWindow() {
           <div ref={galleryRef} className="flex-1 overflow-y-auto px-5 pb-5">
             <AnimatePresence mode="wait">
               <motion.div
-                key={selectedProject ?? 'all'}
+                key={selectedProject ?? selectedCollection ?? 'all'}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="photos-random-grid"
-                style={{
-                  '--photo-tile': `${tileWidth}px`,
-                  '--photo-row': `${Math.round(tileWidth * 0.76)}px`,
-                } as React.CSSProperties}
+                className="photos-masonry"
+                style={{ '--photo-tile': `${isMobile ? Math.round(tileWidth * 0.6) : tileWidth}px` } as React.CSSProperties}
               >
                 {filtered.map((photo, idx) => (
-                  <motion.button
+                  <button
                     key={photo.key}
                     onClick={() => setLightboxIndex(idx)}
-                    aria-label={`Photo ${idx + 1}`}
-                    className={`photos-random-tile photos-random-tile--${idx % 11}`}
-                    whileHover={{ scale: 0.985, opacity: 0.9 }}
-                    transition={{ duration: 0.16 }}
+                    aria-label={`${photo.projectTitle}, photo ${idx + 1}`}
+                    className="photos-masonry-tile"
+                    style={{ background: photo.color }}
                   >
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        background: photo.color,
-                        position: 'relative',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={encodeSrc(photo.src)}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-                  </motion.button>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={encodeSrc(photo.src)}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span className="photos-masonry-info" aria-hidden="true">
+                      <strong>{photo.projectTitle}</strong>
+                      <span>{photo.location} · {photo.year}</span>
+                    </span>
+                  </button>
                 ))}
               </motion.div>
             </AnimatePresence>
@@ -309,7 +336,7 @@ export function PhotosWindow() {
           onNext={() => setLightboxIndex((i) => (i! + 1) % filtered.length)}
           onOpenAlbum={(projectId) => {
             setLightboxIndex(null);
-            openWindow('finder', projectId);
+            setSelectedProject(projectId);
           }}
         />
       )}
@@ -397,7 +424,7 @@ function PhotoDetails({
         </motion.div>
 
         <div className="photos-detail-copy">
-          <p className="photos-detail-kicker">{photo.category} · {current + 1}/{photos.length}</p>
+          <p className="photos-detail-kicker">{photo.collection === 'focus' ? 'Focus' : 'Chroniques'} · {current + 1}/{photos.length}</p>
           <h2>{fileName(photo.src)}</h2>
           <p className="photos-detail-description">{photo.description}</p>
           <dl>
@@ -409,7 +436,7 @@ function PhotoDetails({
                   type="button"
                   className="photos-detail-album-link"
                   onClick={() => onOpenAlbum(photo.projectId)}
-                  aria-label={`Ouvrir l’album ${photo.projectTitle} dans Finder`}
+                  aria-label={`Ouvrir l’album ${photo.projectTitle} `}
                 >
                   {photo.projectTitle}
                   <ChevronRight size={11} aria-hidden="true" />

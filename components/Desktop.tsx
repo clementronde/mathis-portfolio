@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useWindowStore } from '@/store/useWindowStore';
-import { TopBar } from './TopBar';
 import { HomeNotifications } from './HomeNotifications';
 import { Dock } from './Dock';
 import { DesktopItem } from './DesktopItem';
@@ -38,17 +37,16 @@ const WINDOWS: { id: AppId; element: React.ReactNode }[] = [
 const STATIC_PRELOAD_IMAGES = [
   '/images/wallpaper.jpg',
   '/images/wallpaper.avif',
-  '/images/MSA.png',
-  '/images/desktop/wallpaperverouillage.png',
+  '/images/desktop/wallpaperverouillage.avif',
   '/images/desktop/Ellipsemathis.png',
   '/images/desktop/Couscous.png',
-  '/images/MSA.svg',
+  '/images/desktop/FilesRedDerniersProjets.png',
   '/images/icons/Findericon.png',
   '/images/icons/Mailicon.png',
   '/images/icons/noteicon.png',
   '/images/icons/Photosicon.png',
   '/images/icons/musiqueIcon.png',
-  '/images/icons/localistionicon.png',
+  '/images/icons/plansicon.png',
   '/images/icons/folder-with-paper.svg',
   '/images/icons/dossiericon.png',
   '/images/icons/lightroomicon.png',
@@ -71,7 +69,7 @@ const SITE_PRELOAD_IMAGES = Array.from(
 
 const PRELOAD_TOTAL = SITE_PRELOAD_IMAGES.length;
 
-const DESKTOP_ITEM_POSITIONS_KEY = 'portfolio-desktop-item-positions-v3';
+const DESKTOP_ITEM_POSITIONS_KEY = 'portfolio-desktop-item-positions-v4';
 const DESKTOP_REFERENCE_SIZE = { width: 1440, height: 900 };
 
 function getDefaultItemPositions() {
@@ -121,7 +119,7 @@ function getMobileItemPosition(item: (typeof DESKTOP_ITEMS)[number]): React.CSSP
 }
 
 export function Desktop() {
-  const { openWindows, openWindow } = useWindowStore();
+  const { openWindows, openWindow, openPhotosAlbum } = useWindowStore();
   const desktopItemsRef = useRef<HTMLDivElement>(null);
   const preloadImagesRef = useRef<HTMLImageElement[]>([]);
   const [itemPositions, setItemPositions] = useState<Record<string, React.CSSProperties>>(getDefaultItemPositions);
@@ -196,6 +194,8 @@ export function Desktop() {
 
     return () => {
       disposed = true;
+      // Permet de relancer le préchargement si l'effet est rejoué (StrictMode en dev)
+      preloadImagesRef.current = [];
     };
   }, [locked]);
 
@@ -210,10 +210,12 @@ export function Desktop() {
     <div
       className="fixed inset-0 overflow-hidden select-none"
       style={{
+        // Le fond du wallpaper est noir : on le réduit sans couture visible
         backgroundImage: `url('/images/wallpaper.jpg')`,
-        backgroundSize: 'cover',
+        backgroundSize: 'auto 78%',
         backgroundPosition: 'center',
-        backgroundColor: '#6aa3c5',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#000000',
       }}
     >
 
@@ -223,30 +225,7 @@ export function Desktop() {
         transition={{ duration: locked ? 0 : 0.32, ease: 'easeOut' }}
         style={{ pointerEvents: locked ? 'none' : 'auto' }}
       >
-        <TopBar />
         <HomeNotifications />
-
-        {/* Logo MSA — desktop grand, mobile petit */}
-        <div className="absolute left-1/2 z-[9] -translate-x-1/2 pointer-events-none select-none"
-          style={{ top: '72px' }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/MSA.svg"
-            alt="MSA"
-            className="block w-auto hidden md:block"
-            style={{ height: 58, filter: 'drop-shadow(0 2px 20px rgba(0,0,0,0.45))' }}
-            draggable={false}
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/MSA.svg"
-            alt="MSA"
-            className="block w-auto md:hidden"
-            style={{ height: 36, filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.5))' }}
-            draggable={false}
-          />
-        </div>
 
         {/* Desktop collage — toutes tailles, largeurs réduites sur mobile */}
         <div ref={desktopItemsRef} data-tour="desktop-items" className="pointer-events-none absolute inset-0 z-[10]">
@@ -258,7 +237,7 @@ export function Desktop() {
               imageColor={item.imageColor}
               rotate={item.rotate}
               style={isMobile ? getMobileItemPosition(item) : itemPositions[item.id]}
-              width={isMobile ? Math.round(item.width * 0.38) : item.width}
+              width={isMobile ? Math.round(item.width * 0.5) : item.width}
               aspectRatio={item.aspectRatio}
               type={item.type}
               finderSelectHover={item.finderSelectHover ?? false}
@@ -275,13 +254,17 @@ export function Desktop() {
                 });
               }}
               onClick={() => {
-                if (item.action.type === 'lightbox' && item.imageSrc) {
+                if (item.action.type === 'lightbox') {
                   setDesktopLightboxImage(item.imageSrc);
                   return;
                 }
 
-                const folder = (item.action as { type: string; folder?: string }).folder;
-                openWindow('finder', folder);
+                if (item.action.type === 'photos') {
+                  openPhotosAlbum(item.action.album ?? null);
+                  return;
+                }
+
+                openWindow('finder', item.action.folder);
               }}
             />
           ))}
